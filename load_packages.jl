@@ -7,6 +7,7 @@
     using Random
     using Shapefile
     using Plots
+    using GAMS
 
 # necessary functions for the framework
     include("functions/adjacency_matrix.jl")

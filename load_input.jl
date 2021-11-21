@@ -20,9 +20,6 @@
 ##          between basic area 3 and basic area 5
     airdist = readdlm("data/airdistances_$problem.csv", ',', Float64)
 
-# Determine the number of hexagons in this problem instance
-    hexsize = size(airdist,1)
-
 # load the driving times between the basic areas(necessary)
 ## 2-dimensional array containing the driving time between all
 ## combinations of basic areas in minutes (Float64)
@@ -35,6 +32,20 @@
 ## each shift should be assigned with a number starting from 1
     shifts = readdlm("data/shifts_$problem.csv", ',', Int64)
 
+# load the adjacency matrix between the basic areas(if available)
+## 2-dimensional array containing the adjacency between all
+## combinations of basic areas (Int64). Important, if rivers or
+## other barriers are contained within the area
+## example: row 3 column 5 corresponds to the adjacency
+##          between basic area 3 and basic area 5
+## if no data is available, a matrix is created based on the 
+## airial distance between the hexagonal BAs
+    if isfile("data/adjacency_$problem.csv")
+        adjacent = readdlm("data/adjacency_$problem.csv", ',', Int64)
+    else
+        adjacent = adjacency_matrix(airdist::Array{Float64,2})
+    end
+
 # load the array of potential BAs for a district center (if available)
 # if no array is available, all BAs are potential locations (Int)
 ## binary array with a 1 if a BA represents a potential center, else 0
@@ -42,7 +53,7 @@
     if isfile("data/potential_locations_$problem.csv")
         potloc = readdlm("data/potential_locations_$problem.csv", ',', Int64)
     else
-        potloc = Array{Int64,1}(undef,size(hexsize,1)) .= 1
+        potloc = Array{Int64,1}(undef,size(airdist,1)) .= 1
     end
 
 # load the array of current departments (if available)
@@ -52,7 +63,7 @@
     if isfile("data/current_departments_$problem.csv")
         curdep = readdlm("data/current_departments_$problem.csv", ',', Int64)
     else
-        curdep = Array{Int64,1}(undef,size(hexsize,1)) .= 0
+        curdep = Array{Int64,1}(undef,size(airdist,1)) .= 0
     end
 
 # load the traffic flow parameter for each weekhour (if available)
