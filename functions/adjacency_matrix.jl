@@ -1,5 +1,6 @@
+# create an adjacency matrix based on the airdistance
 function adjacency_matrix(airdist::Array{Float64,2})
-    adjacent = Array{Int64,2}(undef,size(airdist,1),size(airdist,1)) .= 0
+    adjacent = Array{Bool,2}(undef,size(airdist,1),size(airdist,1)) .= 0
     one_dist = minimum(airdist[airdist .> 0])
     for i = 1:size(airdist,1)
         for j = 1:size(airdist,1)
@@ -10,5 +11,5 @@ function adjacency_matrix(airdist::Array{Float64,2})
             end
         end
     end
-    return adjacent::Array{Int64,2}
+    return adjacent::Array{Bool,2}
 end

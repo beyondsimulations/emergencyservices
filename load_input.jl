@@ -41,7 +41,7 @@
 ## if no data is available, a matrix is created based on the 
 ## airial distance between the hexagonal BAs
     if isfile("data/adjacency_$problem.csv")
-        adjacent = readdlm("data/adjacency_$problem.csv", ',', Int64)
+        adjacent = readdlm("data/adjacency_$problem.csv", ',', Bool)
     else
         adjacent = adjacency_matrix(airdist::Array{Float64,2})
     end
@@ -51,9 +51,9 @@
 ## binary array with a 1 if a BA represents a potential center, else 0
 ## the first entry in the array corresponds to the hexagon with the id 1
     if isfile("data/potential_locations_$problem.csv")
-        potloc = readdlm("data/potential_locations_$problem.csv", ',', Int64)
+        potential_locations = readdlm("data/potential_locations_$problem.csv", ',', Bool)
     else
-        potloc = Array{Int64,1}(undef,size(airdist,1)) .= 1
+        potential_locations = Vector{Bool}(undef,size(airdist,1)) .= 1
     end
 
 # load the array of current departments (if available)
@@ -61,9 +61,9 @@
 ## binary array with a 1 if a BA represents a current location, else 0
 ## the first entry in the array corresponds to the hexagon with the id 1
     if isfile("data/current_departments_$problem.csv")
-        curdep = readdlm("data/current_departments_$problem.csv", ',', Int64)
+        current_locations = readdlm("data/current_departments_$problem.csv", ',', Bool)
     else
-        curdep = Array{Int64,1}(undef,size(airdist,1)) .= 0
+        current_locations = Vector{Bool}(undef,size(airdist,1)) .= 0
     end
 
 # load the traffic flow parameter for each weekhour (if available)
@@ -74,7 +74,7 @@
 ### the first entry corresponds to the data for the first weekhour
 ### the first weekhour starts each monday at 00:00
     if isfile("data/traffic_flow_$problem.csv")
-        curdep = readdlm("data/traffic_flow_$problem.csv", ',', Float64)
+        traffic = readdlm("data/traffic_flow_$problem.csv", ',', Float64)
     else
         traffic = Array{Float64,2}(undef,168,2)
         traffic[:,1] .= 1
@@ -82,9 +82,14 @@
     end
 
 # load the shape file of the problem instance (if available)
-## the .shp file should contain 2 columns
-### column 1: shape file of the hexagon
-### column 2: hexagon id
+## the .shp file can contain multiple columns, 2 columns are important
+## for our model:
+### column :id hexagon id
+### column :geometry shape file of the hexagon
     if isfile("grids/grid_$problem.shp")
-        hexshape =  Shapefile.Table("grids/grid_$problem.shp")
+        hexshape = Shapefile.Table("grids/grid_$problem.shp")
+        hexshape = DataFrame(hexshape)
+        hexshape = sort!(hexshape, :id)
+    else
+        hexshape = nothing
     end
