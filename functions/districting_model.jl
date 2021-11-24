@@ -33,20 +33,6 @@ function districting_model(optcr::Float64,
     @variable(districting, Y[1:hex], Bin)
     @variable(districting, W[1:hex,1:hex], Bin)
 
-## Close locations that are not on the list of potential locations
-    for i = 1:hex
-        set_upper_bound(Y[i], potential_locations[i])
-    end
-
-## Fix allocations beyond the specified maximum driving distance
-    for i = 1:hex
-        for j = 1:hex
-            if drivingtime[i,j] > max_drive
-                fix.(W[i,j], 0, force=true)
-            end
-        end
-    end
-
 ## Define the objective function                
     @objective(districting, Min,
                     sum(workload[i,j] * W[i,j] for i = 1:hex, j = 1:hex if drivingtime[i,j] <= max_drive && potential_locations[i] == 1))

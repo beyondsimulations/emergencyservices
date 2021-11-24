@@ -9,6 +9,7 @@
     using Plots
     using GAMS
     using Dates
+    using Distributions
 
 # necessary functions for the framework
     include("functions/adjacency_matrix.jl")
@@ -18,3 +19,6 @@
     include("functions/normalize.jl")
     include("functions/equalize.jl")
     include("functions/plot_districts.jl")
+    include("functions/small_functions.jl")
+    include("functions/capacity_heuristic.jl")
+    include("functions/ressource_flow_matrix.jl")

@@ -32,6 +32,16 @@
 ## each shift should be assigned with a number starting from 1
     shifts = readdlm("data/shifts_$problem.csv", ',', Int64)
 
+# load the real capacity plan of the emergency service
+## array with 168 rows, where each entry corresponds to one weekhour
+## the number of rows depends on the number of districts (number_districts)
+    if real_capacity == true
+        simulation_capacity = readdlm("data/capacity_$problem.csv", ',', Int64)
+        if size(simulation_capacity,2) != number_districts
+            error("Number of districts does not match with the capacity plan!")
+        end
+    end
+
 # load the adjacency matrix between the basic areas(if available)
 ## 2-dimensional array containing the adjacency between all
 ## combinations of basic areas (Int64). Important, if rivers or
