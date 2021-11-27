@@ -39,12 +39,12 @@
 # state the main parameters for the simulation (framework stage 2)
     min_capacity = 1::Int64        # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
-    exchange_backlog = 60::Int64   # maximal minutes in district backlog till exchange is forbidden
+    backlog_max = 30::Int64        # maximal average backlog (minutes) per car in district for exchange
     max_queue = 75::Int64          # maximal length of the queue of incidents per district
     real_capacity = false          # state whether a predefined capacity plan should be loaded
 
 # state the main parameters for the capacity estimation if no capacity plan is given
-    hourly_capacity = 5::Int64          # average capacity per hour and location over incident timeframe
+    hourly_capacity = 8::Int64          # average capacity per hour and location over incident timeframe
     capacity_service = 0.90::Float64    # alpha service level for weekhour workload estimation
 
 # state how many cars should be reserved for the own district per incident priority
@@ -66,7 +66,8 @@ if framework != "stage 2"
     print("\n Starting optimisation.")
 
 ## Start the optimisation model
-    districts, gap, objval = districting_model(optcr::Float64,
+    print("\n Duration of the optimisation:")
+    @time districts, gap, objval = districting_model(optcr::Float64,
                                         reslim::Int64,
                                         cores::Int64,
                                         nodlim::Int64,
@@ -117,105 +118,40 @@ if framework != "stage 1"
     # prepare the input data for stage 2
     include("prepare_stage_2.jl")
     print("\n Input sucessfully prepared for simulation.")
-    print("\n Average capacity per district: ",
+    print("\n Ressource matrix build.")
+    print("\n Average ressources per district: ",
                 round(Int64,sum(ressource_flow)/5))
 
 ### start the simulation
-##  current_incident: it counts the current incident.
-    current_incident = 1
+    print("\n Duration of the simulation:")
+    @time part2_simulation!(districts::DataFrame,
+                      incidents::DataFrame,
+                      sim_data::DataFrame,
+                      ressource_flow::Array{Int64,3},
+                      drivingtime::Array{Float64,2},
+                      traffic::Array{Float64,2},
+                      max_drive::Float64)
+    print("\n Simulation completed.")
 
-##  incident_queue: array that saves the incidents that
-##                  could not be fulfilled directly
-    incident_queue = Array{Union{Missing,Int},3}(missing,
-                            max_queue,
-                            size(ressource_flow,2),
-                            card_priorities)
-
-##  exchange_queue: array that saves the incidents that
-##                  could be fulfilled from other districts
-    exchange_queue = Array{Union{Missing,Int},1}(missing,
-                            max_queue * size(ressource_flow,2))
-
-## current_status: preallocate array that saves current status         
-    current_status =  Array{Int64,2}(undef,size(ressource_flow,2),
-                                        card_priorities) .= 1
-
-## timestamps: preallocate array that saves the timestamps
-##             of each incident during the simulation
-    timestamps = Array{Int64,1}(undef,6) .= 0
-
-##  candidates: the preallocated list of exchange candidates
-    candidates =  Array{Union{Missing,Int64},1}(missing,
-                            size(ressource_flow,2))
-
-##  Starting simulation
-for m = 1:size(ressource_flow,1)
-    current_status .= 1
-    while cs[n,4] == m && n < size(cs,1)
-        if iter[cs[n,2],cs[n,3]] == size(w,1)
-            print("qd to short!")
-        else
-            if ismissing(w[iter[cs[n,2],cs[n,3]],cs[n,2],cs[n,3]])
-                w[iter[cs[n,2],cs[n,3]],cs[n,2],cs[n,3]] = cs[n,1]
-                n += 1
-            else
-                iter[cs[n,2],cs[n,3]] += 1
-            end
-        end
-    end
-    while cs[n,4] == m && n < size(cs,1)
-        if iter[cs[n,2],cs[n,3]] == size(w,1)
-            print("qd to short!")
-        else
-            if ismissing(w[iter[cs[n,2],cs[n,3]],cs[n,2],cs[n,3]])
-                w[iter[cs[n,2],cs[n,3]],cs[n,2],cs[n,3]] = cs[n,1]
-                n += 1
-            else
-                iter[cs[n,2],cs[n,3]] += 1
-            end
-        end
-    end
-    for p = 1:P
-             allocation_own!(iter::Array{Int64,2},
-                             w::Array{Union{Missing,Int},3},
-                             s::Array{Int64,3},
-                             cs::Array{Union{Int,Float64,Missing},2},
-                             b_max::Int64,
-                             drive::Array{Float64,2},
-                             rush_var::Array{Float64,2},
-                             rh::Array{Float64,2},
-                             t::Array{Int64,1},
-                             m::Int64,
-                             p::Int64,
-                             wh::Int64)
-        fill_exchange_queue!(w::Array{Union{Missing,Int},3},
-                             w_aus::Array{Union{Missing,Int},1},
-                             cs::Array{Union{Int,Float64,Missing},2},
-                             m::Int64,
-                             p::Int64,
-                             ex_del::Array{Int64,1},
-                             ex_max::Float64)
-        allocation_exchange!(w_aus::Array{Union{Missing,Int},1},
-                             iter::Array{Int64,2},
-                             drive::Array{Float64,2},
-                             distance_max::Int64,
-                             s::Array{Int64,3},
-                             ex_res::Array{Int64,1},
-                             p::Int64,
-                             kand::Array{Union{Missing,Float64},1},
-                             m::Int64,
-                             cs::Array{Union{Int,Float64,Missing},2},
-                             rush_var::Array{Float64,2},
-                             rh::Array{Float64,2},
-                             t::Array{Int64,1},
-                             wh::Int64,
-                             exchange_prio::Int64)
-    end
-    backlog_management!(s,m)
-    clear_queue!(w,m,cs)
-    timestep!(s,m,M)
-end
-
-### end stage 2
+## Evaluate the results of the simulation
+    incidents = innerjoin(incidents,sim_data,on=:incidentid)
+    incidents[:,:response_time_first]   = incidents[:,:arrival_minute_first]    - incidents[:,:incident_minute]
+    incidents[:,:response_time_all]     = incidents[:,:arrival_minute_all]      - incidents[:,:incident_minute]
+    incidents[:,:dispatch_time_first]   = incidents[:,:dispatch_minute_first]   - incidents[:,:incident_minute]
+    incidents[:,:dispatch_time_all]     = incidents[:,:dispatch_minute_all]     - incidents[:,:incident_minute]
+    incidents[:,:driving_time_first]    = incidents[:,:arrival_minute_first]    - incidents[:,:dispatch_minute_first]
+    
+## Group the results on a weekly basis
+    weekly = groupby(dropmissing(incidents), [:location_responsible, :weekhour])
+    weekly = combine(weekly,
+                        nrow => :total_cases_fulfilled,
+                        :cars => mean => :requested_cars,
+                        :cars_dispatched => mean => :dispatched_cars,
+                        :dispatch_time_first => mean => :dispatch_time_first,
+                        :response_time_first => mean => :response_time_first,
+                        :driving_time_first => mean => :driving_time_first,
+                        :cars_missing => mean => :cars_missing,
+                        :cars_location_responsible => mean => :cars_locations_responsible)
+    weekly = sort!(weekly, [:weekhour, :location_responsible])
 end 
 

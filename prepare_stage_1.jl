@@ -3,8 +3,7 @@
     hex = size(airdist,1)
 
 # append the weekhour to the incident dataset
-    incidents.weekhour = (dayofweek.(unix2datetime.(incidents.epoch)) .- 1) .* 24 .+ 
-                            hour.(unix2datetime.(incidents.epoch)) .+ 1
+    incidents.weekhour = epoch_weekhour.(incidents.epoch)
 
 # prepare the workload for each BA if allocated to a potential center
     workload = workload_calculation(incidents::DataFrame,

@@ -1,7 +1,7 @@
 # function to generate an adequate DataFrame with capacities for each 
 # weekhour and district center if no external capacity plan is provided
  function capacity_heuristic(incidents::DataFrame,
-                                simulation::DataFrame,
+                                sim_data::DataFrame,
                                 hourly_capacity::Int64,
                                 min_capacity::Int64)
     # Create a DataFrame with time data
@@ -15,7 +15,7 @@
     # Fill the DataFrame with the incident data
         for i = 1:nrow(incidents)
         push!(incidents_time, (incidentid   = incidents[i, :incidentid], 
-            location    = simulation[i,:location_responsible],
+            location    = sim_data[i,:location_responsible],
             year        = year(unix2datetime(incidents[i, :epoch])),
             yearweek    = week(unix2datetime(incidents[i, :epoch])),
             weekhour    = incidents[i, :weekhour],
@@ -26,14 +26,12 @@
         for i = 1:nrow(incidents)
             for j = 1:incidents[i,:cars]
             incidents_time[i,:workload] += 
-            dispatch_drivingtime(drivingtime[simulation[i,:location_responsible],incidents[i,:location]],
-                traffic[incidents[i,:weekhour],1],
-                traffic[incidents[i,:weekhour],2])
+            dispatch_drivingtime(drivingtime[sim_data[i,:location_responsible],
+            incidents[i,:location]],traffic,sim_data[i,:incident_minute])
             incidents_time[i,:workload] += incidents[i,:length]
             incidents_time[i,:workload] += 
-            dispatch_drivingtime(drivingtime[simulation[i,:location_responsible],incidents[i,:location]],
-                traffic[incidents[i,:weekhour],1],
-                traffic[incidents[i,:weekhour],2])
+            dispatch_drivingtime(drivingtime[sim_data[i,:location_responsible],
+            incidents[i,:location]],traffic,sim_data[i,:incident_minute])
             end
         incidents_time[i,:workload] += incidents[i,:backlog]
         end
@@ -55,7 +53,7 @@
             weekhours[i,:weekhour] = i
         end
         time_frame = crossjoin(time_frame, weekhours, makeunique = true)
-        all_locations = unique!(simulation[:,[:location_responsible]], :location_responsible)
+        all_locations = unique!(sim_data[:,[:location_responsible]], :location_responsible)
         all_locations = rename!(all_locations,[:location])
         time_frame = crossjoin(time_frame, all_locations, makeunique = true)
         time_frame[:,:shift] .= 0

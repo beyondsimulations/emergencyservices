@@ -1,22 +1,23 @@
 # Function that generates the ressource flow matrix the
-# simulation is build on
-function ressource_flow_matrix(simulation::DataFrame,
+# sim_data is build on
+function ressource_flow_matrix(sim_data::DataFrame,
                                incidents::DataFrame,
                                simulation_capacity::Array{Int64,2})
 ### sim_start:  epoch (in minutes) of the first incident
 ### sim_length: epoch (in minutes) ends 5 minutes after the incident_minute
 ###             of the last incidents in our incidents DataFrame
-    sim_start  = minimum(simulation[:,:incident_minute])
-    sim_length = maximum(simulation[:,:incident_minute]) + 5
+    sim_start  = minimum(sim_data[:,:incident_minute])
+    sim_length = maximum(sim_data[:,:incident_minute]) + 5
 
-### ressource_flow: the ressource flow matrix of the simulation
+### ressource_flow: the ressource flow matrix of the sim_data
 ### ressource_flow[:,:,1] = capcacity at district center
 ### ressource_flow[:,:,2] = capcacity driving to incident
 ### ressource_flow[:,:,3] = capcacity at incident
 ### ressource_flow[:,:,4] = capcacity driving back to district center
 ### ressource_flow[:,:,5] = capcacity at paperwork
-    ressource_flow = Array{Int64,3}(undef,sim_length - sim_start,
-                                    size(simulation_capacity,2), 5) .= 0
+### ressource_flow[:,:,5] = minutes of paperwork in the corresponding district
+    ressource_flow = Array{Int64,3}(undef,sim_length - sim_start + 1000,
+                                    size(simulation_capacity,2), 6) .= 0
     current_weekhour = incidents[1,:weekhour]
     current_minute = minute(unix2datetime(incidents[1,:epoch]))
     ressource_flow[1,:,1] = simulation_capacity[current_weekhour,:]
