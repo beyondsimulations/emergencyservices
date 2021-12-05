@@ -30,7 +30,7 @@
 # load the shift pattern for each weekhour (necessary)
 ## array with 168 entrys, each entry corresponds to one weekhour
 ## each shift should be assigned with a number starting from 1
-    shifts = readdlm("data/shifts_$problem.csv", ',', Int64)
+    shifts = readdlm("data/shifts_4hours_$problem.csv", ',', Int64)
 
 # load the real capacity plan of the emergency service
 ## array with 168 rows, where each entry corresponds to one weekhour

@@ -7,10 +7,10 @@
     using Plots
 
 # number of random incidents to generate
-    random_incidents = 10000
+    random_incidents = 60000
 
 # number of days for generated data
-    total_days = 28
+    total_days = 112
 
 # number of hexagons
     hexsize = 510

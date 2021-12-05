@@ -26,9 +26,9 @@
 
 ### simulation_capacity: define the capacity of each location in each weekhour
     if real_capacity == false
-        simulation_capacity = capacity_heuristic(incidents::DataFrame,
+        simulation_capacity, capacity_plot = capacity_heuristic(incidents::DataFrame,
                                                  sim_data::DataFrame,
-                                                 hourly_capacity::Int64,
+                                                 total_capacity::Int64,
                                                  min_capacity::Int64)
     end
 

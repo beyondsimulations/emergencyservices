@@ -5,23 +5,27 @@
 # stage 1: only the optimisation will be executed
 # stage 2: only the simulation will be executed (requires at least one run of stage 1)
 # both:    both stages will be executed
-    framework = "stage 2"
+    framework = "both"
 
 # state the main input parameters for the optimisation (framework stage 1)
     problem          = "510"         # name of the problem instance that should be solved
-    number_districts = 5::Int64      # number of districts that should be opened
-    max_drive        = 25.0::Float64 # maximum driving distance (minutes) to district border
-    nearby_districts = 2::Int64      # minimal number of districts within nearby radius
-    nearby_radius    = 15.0::Float64 # maximal driving time to nearby district center
+    number_districts = 10::Int64     # number of districts that should be opened
+    max_drive        = 40.0::Float64 # maximum driving distance (minutes) to district border
+    nearby_districts = 1::Int64      # minimal number of districts within nearby radius
+    nearby_radius    = 30.0::Float64 # maximal driving time to nearby district center
     fixed_locations  = 0::Int64      # number of current locations that should not be moved
-    plot_district    = true          # state whether the resulting district should be plotted
+    plot_district    = true::Bool    # state whether the resulting district should be plotted
 
 # state the optimisation options
-    optcr   = 0.010::Float64         # allowed gap
+    optcr   = 0.000::Float64         # allowed gap
     reslim  = 10800::Int64           # maximal duration of optmisation in seconds
-    cores   = 5::Int64               # number of CPU cores
+    cores   = 4::Int64               # number of CPU cores
     nodlim  = 1000000::Int64         # maximal number of nodes
     iterlim = 1000000::Int64         # maximal number of iterations
+    silent  = true::Bool             # state whether to surpress the optimisation log
+
+# state whether to use CPLEX via GAMS or the open source solver CBC
+    opensource = false
 
 # state the strength of the compactness and contiguity constraints
 # C0 = no contiguity constraints (no compactness)
@@ -37,14 +41,16 @@
     prio_weight = [1, 1, 1, 1, 1]
 
 # state the main parameters for the simulation (framework stage 2)
-    min_capacity = 1::Int64        # minimal capacity for each district during each weekhour
+    min_capacity   = 1::Int64      # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
-    backlog_max = 30::Int64        # maximal average backlog (minutes) per car in district for exchange
-    max_queue = 75::Int64          # maximal length of the queue of incidents per district
-    real_capacity = false          # state whether a predefined capacity plan should be loaded
+    backlog_max    = 30::Int64     # maximal average backlog (minutes) per car in district for exchange
+    max_queue      = 100::Int64    # maximal length of the queue of incidents per district
+    real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
+    drop_incident  = 300::Int64    # total number of minutes after which an incident will leave the
+                                   # will leave the queue even if it's not fully fulfilled
 
 # state the main parameters for the capacity estimation if no capacity plan is given
-    hourly_capacity = 8::Int64          # average capacity per hour and location over incident timeframe
+    total_capacity   = 50::Int64        # average capacity per hour in the area over the incident timeframe
     capacity_service = 0.90::Float64    # alpha service level for weekhour workload estimation
 
 # state how many cars should be reserved for the own district per incident priority
@@ -54,11 +60,11 @@
 
 # load the input data
     include("load_input.jl")
-    print("\n Input data sucessfully loaded.")
+    print("\n\n Input data sucessfully loaded.")
 
-# prepare the input data for stage 1
+# prepare the input data for stage 1 (also neccessary for stage 2!)
     include("prepare_stage_1.jl")
-    print("\n Input sucessfully prepared for optimisation.")
+    print("\n Input sucessfully prepared for both stages.")
 
 
 # district optimisation (framework stage 1)
@@ -66,8 +72,7 @@ if framework != "stage 2"
     print("\n Starting optimisation.")
 
 ## Start the optimisation model
-    print("\n Duration of the optimisation:")
-    @time districts, gap, objval = districting_model(optcr::Float64,
+scnds = @elapsed districts, gap, objval = districting_model(optcr::Float64,
                                         reslim::Int64,
                                         cores::Int64,
                                         nodlim::Int64,
@@ -86,8 +91,10 @@ if framework != "stage 2"
                                         nearby_radius::Float64,
                                         nearby_districts::Int64,
                                         current_locations::Vector{Bool},
-                                        fixed_locations::Int64)
-    print("\n Optimisation finished.")
+                                        fixed_locations::Int64,
+                                        opensource::Bool,
+                                        silent::Bool)
+print("\n Duration of the optimisation: ", scnds, " seconds")
 
 ## Plot the resulting district layout
     if plot_district && hexshape !== nothing
@@ -119,39 +126,34 @@ if framework != "stage 1"
     include("prepare_stage_2.jl")
     print("\n Input sucessfully prepared for simulation.")
     print("\n Ressource matrix build.")
-    print("\n Average ressources per district: ",
-                round(Int64,sum(ressource_flow)/5))
 
 ### start the simulation
-    print("\n Duration of the simulation:")
-    @time part2_simulation!(districts::DataFrame,
+    scnds = @elapsed part2_simulation!(districts::DataFrame,
                       incidents::DataFrame,
                       sim_data::DataFrame,
                       ressource_flow::Array{Int64,3},
                       drivingtime::Array{Float64,2},
                       traffic::Array{Float64,2},
-                      max_drive::Float64)
+                      max_drive::Float64,
+                      drop_incident)
     print("\n Simulation completed.")
+    print("\n Duration of the simulation: ", scnds, " seconds")
+    print("\n Average ressources allocated to districts during simulation: ",
+    round(Int64,sum(ressource_flow[1:size(ressource_flow,1)-1000,:,1:5]
+                                    /(size(ressource_flow,1)-1000))))
 
-## Evaluate the results of the simulation
-    incidents = innerjoin(incidents,sim_data,on=:incidentid)
-    incidents[:,:response_time_first]   = incidents[:,:arrival_minute_first]    - incidents[:,:incident_minute]
-    incidents[:,:response_time_all]     = incidents[:,:arrival_minute_all]      - incidents[:,:incident_minute]
-    incidents[:,:dispatch_time_first]   = incidents[:,:dispatch_minute_first]   - incidents[:,:incident_minute]
-    incidents[:,:dispatch_time_all]     = incidents[:,:dispatch_minute_all]     - incidents[:,:incident_minute]
-    incidents[:,:driving_time_first]    = incidents[:,:arrival_minute_first]    - incidents[:,:dispatch_minute_first]
-    
-## Group the results on a weekly basis
-    weekly = groupby(dropmissing(incidents), [:location_responsible, :weekhour])
-    weekly = combine(weekly,
-                        nrow => :total_cases_fulfilled,
-                        :cars => mean => :requested_cars,
-                        :cars_dispatched => mean => :dispatched_cars,
-                        :dispatch_time_first => mean => :dispatch_time_first,
-                        :response_time_first => mean => :response_time_first,
-                        :driving_time_first => mean => :driving_time_first,
-                        :cars_missing => mean => :cars_missing,
-                        :cars_location_responsible => mean => :cars_locations_responsible)
-    weekly = sort!(weekly, [:weekhour, :location_responsible])
+## plot the results
+    include("plot_results.jl")
+    print("\n Framework completed.")
+    print("\n Main results:")
+    print("\n Average dispatch time:          ", 
+            round(overall_missing[1,:dispatch_time_first],digits=2))
+    print("\n Average response time:          ", 
+            round(overall_missing[1,:response_time_first],digits=2))
+    print("\n Average exchange ratio:         ", 
+            round(1-overall_missing[1,:cars_location_responsible]/
+                    overall_missing[1,:dispatched_cars], digits = 2))
+    print("\n Unfullfilled calls for service: ", 
+            overall_missing[1,:incidents_unfulfilled])
 end 
 

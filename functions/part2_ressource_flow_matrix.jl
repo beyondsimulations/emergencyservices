@@ -7,7 +7,7 @@ function ressource_flow_matrix(sim_data::DataFrame,
 ### sim_length: epoch (in minutes) ends 5 minutes after the incident_minute
 ###             of the last incidents in our incidents DataFrame
     sim_start  = minimum(sim_data[:,:incident_minute])
-    sim_length = maximum(sim_data[:,:incident_minute]) + 5
+    sim_length = maximum(sim_data[:,:incident_minute])
 
 ### ressource_flow: the ressource flow matrix of the sim_data
 ### ressource_flow[:,:,1] = capcacity at district center
@@ -19,14 +19,15 @@ function ressource_flow_matrix(sim_data::DataFrame,
     ressource_flow = Array{Int64,3}(undef,sim_length - sim_start + 1000,
                                     size(simulation_capacity,2), 6) .= 0
     current_weekhour = incidents[1,:weekhour]
-    current_minute = minute(unix2datetime(incidents[1,:epoch]))
+    current_minute   = minute(unix2datetime(incidents[1,:epoch]))
     ressource_flow[1,:,1] = simulation_capacity[current_weekhour,:]
     for i = 2:size(ressource_flow,1)
         if current_minute == 60
             current_minute = 0
-            if current_weekhour > size(simulation_capacity,1)
-                current_weekhour = 1
+            if current_weekhour >= size(simulation_capacity,1)
+                current_weekhour = 0
             end
+            current_weekhour += 1
             if current_weekhour == 1
                 ressource_flow[i,:,1] .= 
                 simulation_capacity[current_weekhour,:] - 
@@ -36,7 +37,6 @@ function ressource_flow_matrix(sim_data::DataFrame,
                 simulation_capacity[current_weekhour,:] - 
                 simulation_capacity[current_weekhour-1,:]
             end
-            current_weekhour += 1
         end
         current_minute +=1
     end

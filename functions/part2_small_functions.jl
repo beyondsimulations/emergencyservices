@@ -9,7 +9,7 @@ end
 
 # function to calculate the weekhour based on the current epoch
 function epoch_weekhour(epoch_minute)
-    epoch = epoch_minute * 60
+    epoch = epoch_minute
     weekhour = (dayofweek(unix2datetime(epoch)) - 1) * 24 + hour(unix2datetime(epoch)) + 1
     return weekhour
 end

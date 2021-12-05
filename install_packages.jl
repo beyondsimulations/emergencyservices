@@ -1,0 +1,10 @@
+import Pkg; 
+Pkg.add("CSV")
+Pkg.add("DataFrames")
+Pkg.add("GAMS")
+Pkg.add("JuMP")
+Pkg.add("Shapefile")
+Pkg.add("Plots")
+Pkg.add("Distributions")
+Pkg.add("Cbc")
+Pkg.add("GLPK")

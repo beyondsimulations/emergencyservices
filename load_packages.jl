@@ -7,9 +7,11 @@
     using Random
     using Shapefile
     using Plots
+    using StatsPlots
     using GAMS
     using Dates
     using Distributions
+    using Cbc
 
 # necessary functions for the framework
     include("functions/both_adjacency_matrix.jl")
@@ -28,3 +30,4 @@
     include("functions/part2_fulfill_exchange_queue.jl")
     include("functions/part2_prepare_next_minute.jl")
     include("functions/part2_simulation.jl")
+    include("functions/eval_ressource_status.jl")

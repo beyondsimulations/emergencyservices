@@ -5,9 +5,10 @@ function part2_simulation!(districts::DataFrame,
                             ressource_flow::Array{Int64,3},
                             drivingtime::Array{Float64,2},
                             traffic::Array{Float64,2},
-                            max_drive::Float64)
+                            max_drive::Float64,
+                            drop_incident::Int64)
 ### locations: state the current district ceters
-    locations  = vec(sort!(unique(districts[:,:location])))
+    locations  = Vector{Int64}(vec(sort!(unique(districts[:,:location]))))
 
 ### location_dictionary: dictionary to match the locations to columns in the simulation
     location_district    = Dict(locations[i] => i for i = 1:length(locations))
@@ -114,7 +115,8 @@ function part2_simulation!(districts::DataFrame,
                              incidents::DataFrame,
                              ressource_flow::Array{Int64,3},
                              incident_queue::Array{Union{Missing,Int64},3},
-                             mnt::Int64)
+                             mnt::Int64,
+                             drop_incident::Int64)
     end
     return incident_queue
 end

@@ -18,16 +18,30 @@ function districting_model(optcr::Float64,
                             nearby_radius::Float64,
                             nearby_districts::Int64,
                             current_locations::Vector{Bool},
-                            fixed_locations::Int64)
+                            fixed_locations::Int64,
+                            opensource::Bool,
+                            silent_optimisation::Bool)
 # Initialise the GAMS model instance
-    districting = Model(GAMS.Optimizer)
-    set_optimizer_attribute(districting, GAMS.ModelType(), "MIP")
-    set_optimizer_attribute(districting, "Solver", "CPLEX")
-    set_optimizer_attribute(districting, "OptCR",   optcr)
-    set_optimizer_attribute(districting, "ResLim",  reslim)
-    set_optimizer_attribute(districting, "Threads", cores)
-    set_optimizer_attribute(districting, "NodLim",  nodlim)
-    set_optimizer_attribute(districting, "Iterlim", iterlim)
+    if opensource == true
+        districting = Model(Cbc.Optimizer)
+        set_optimizer_attribute(districting, "logLevel", 1)
+        set_optimizer_attribute(districting, "ratioGap",  optcr)
+        set_optimizer_attribute(districting, "seconds",   reslim)
+        set_optimizer_attribute(districting, "maxNodes",  nodlim)
+    else
+        districting = Model(GAMS.Optimizer)
+        set_optimizer_attribute(districting, GAMS.ModelType(), "MIP")
+        set_optimizer_attribute(districting, "Solver",    "CPLEX")
+        set_optimizer_attribute(districting, "IterLim",   iterlim)
+        set_optimizer_attribute(districting, "optCr",     optcr)
+        set_optimizer_attribute(districting, "ResLim",    reslim)
+        set_optimizer_attribute(districting, "NodLim",    nodlim)
+    end
+    set_optimizer_attribute(districting, "threads",    cores)
+
+    if silent_optimisation == true
+        set_silent(districting)
+    end
 
 ## Initialise the decision variables Y and W
     @variable(districting, Y[1:hex], Bin)
@@ -82,6 +96,17 @@ function districting_model(optcr::Float64,
 
 ## Start the optimisation
     JuMP.optimize!(districting)
+
+    print("\n Optimisation finished.")
+
+## Check whether a solution was found
+    if termination_status(districting) == MOI.OPTIMAL
+        print("\n Solution is optimal.")
+    elseif termination_status(districting) == MOI.TIME_LIMIT && has_values(districting)
+        print("\n Solution is suboptimal due to a time limit, but a primal solution is available.")
+    else
+        error("\n The model was not solved correctly.")
+    end
 
 ## Save the gap and the objective value
     gap = abs(objective_bound(districting)-objective_value(districting))/abs(objective_value(districting)+0.00000000001)
