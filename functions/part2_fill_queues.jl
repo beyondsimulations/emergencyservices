@@ -1,3 +1,5 @@
+# function that fills the main queues of each department with all new incidents
+# happening during the current minute "mnt"
 function fill_queues!(sim_data::DataFrame,
                         incidents::DataFrame,
                         location_district::Dict,
@@ -11,7 +13,6 @@ function fill_queues!(sim_data::DataFrame,
                         max_queue::Int64)
     ## queue_used: array that saves whether a queue is in use
         queue_used .= 1
-        
     ##  fill the incident queue with all new cases arriving during the new minute "mnt"
     while sim_data[cin,:incident_minute] == mnt && cin < card_incidents
         responsible_district = location_district[sim_data[cin,:location_responsible]]
@@ -27,7 +28,6 @@ function fill_queues!(sim_data::DataFrame,
             end
         end
     end
-    
     ## sort the incident queues after the incidents with the longest waiting time 
     for p = 1:card_priorities
         for i = 1:card_districts

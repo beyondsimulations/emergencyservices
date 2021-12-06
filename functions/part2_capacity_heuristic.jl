@@ -4,15 +4,14 @@
                                 sim_data::DataFrame,
                                 total_capacity::Int64,
                                 min_capacity::Int64)
-    # Create a DataFrame with time data
+    # create a DataFrame with time data
         incidents_time = DataFrame(incidentid   = Int[],
         location    = Int[],
         year        = Int[],
         yearweek    = Int[],
         weekhour    = Int[],
         workload    = Float64[])
-
-    # Fill the DataFrame with the incident data
+    # fill the DataFrame with the incident data
         for i = 1:nrow(incidents)
         push!(incidents_time, (incidentid   = incidents[i, :incidentid], 
             location    = sim_data[i,:location_responsible],
@@ -21,8 +20,8 @@
             weekhour    = incidents[i, :weekhour],
             workload = 0))
         end
-
-    # Calculate the overall workload in minutes per incident (including variability of the driving time)
+    # calculate the overall workload in minutes per incident (including 
+    # variability of the driving time)
         for i = 1:nrow(incidents)
             for j = 1:incidents[i,:cars]
             incidents_time[i,:workload] += 
@@ -35,7 +34,7 @@
             end
             incidents_time[i,:workload] += incidents[i,:backlog]
         end
-    # Group the data and create temporary DataFrames to include each weekhour
+    # group the data and create temporary DataFrames to include each weekhour
     # during the incident data set timeframe in each location of a district center
         incidents_time = groupby(incidents_time,[:location,:year,:yearweek,:weekhour])
         incidents_time = combine(incidents_time, :workload  => sum => :workload)
@@ -58,8 +57,7 @@
         incidents_time = outerjoin(incidents_time,time_frame,on=[:location,:yearweek,:weekhour])
         incidents_time = coalesce.(incidents_time, 0.0)
         incidents_time = sort!(incidents_time,[:location,:yearweek,:weekhour])
-        
-    # Group the data and include a safety buffer as stated in our article
+    # group the data and include a safety buffer as stated in our article
         incidents_time = groupby(incidents_time,[:location,:weekhour])
         incidents_time = combine(incidents_time,
         :shift => maximum => :shift,
@@ -70,8 +68,7 @@
         incidents_time[:,:workload] = incidents_time[:,:workload_mean] #+
             incidents_time[:,:workload_std] * 
             quantile.(Normal(), capacity_service)
-
-    # Group the resulting workload to generate a mean hourly workload for each
+    # group the resulting workload to generate a mean hourly workload for each
     # district per shift
         shifts_time = groupby(incidents_time,[:location, :shift])
         shifts_time = combine(shifts_time,:workload => mean => :workload,nrow => :shift_hours)
@@ -81,7 +78,7 @@
         shifts_time = unstack(shifts_time,:location,:workload)
         shifts_capacity = copy(shifts_time)
         shifts_out = copy(shifts_time)
-    # Assign the available ressources to the shifts during the course of a week
+    # assign the available ressources to the shifts during the course of a week
         shifts_capacity = shifts_capacity[:,2:end] .= min_capacity
         shifts_time = shifts_time[:,2:end] = shifts_time[:,2:end] .- 60 * min_capacity
         shifts_capacity = Array(shifts_capacity)
@@ -94,7 +91,7 @@
             shifts_capacity[highest_capacity_pressure] += 1
             all_capacity -= shift_length[highest_capacity_pressure[1],2]
         end
-    # Export the resulting DataFrame with the planned capacity per weekhour
+    # export the resulting DataFrame with the planned capacity per weekhour
     # and district
         shifts_out[:,2:end] = shifts_capacity
         weekhours[:,:shift] .= shifts[:,1]

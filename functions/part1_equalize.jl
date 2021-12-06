@@ -1,4 +1,4 @@
-# Function to prepare the results for plots
+# function to normalize values
 function equalize(vec)
     map = Array{Int64,2}(undef, length(unique(vec)),2) .= 0
     vec = round.(Int64, vec)

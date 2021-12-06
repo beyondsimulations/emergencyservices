@@ -1,4 +1,4 @@
-# Calculate the workload for each possible BA combination
+# calculate the workload for each possible BA combination
 function workload_calculation(incidents::DataFrame,
                                 prio_weight::Vector{Int64},
                                 hex::Int64)

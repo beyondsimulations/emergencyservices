@@ -46,7 +46,7 @@ function districting_model(optcr::Float64,
 ## Initialise the decision variables Y and W
     @variable(districting, Y[1:hex], Bin)
     @variable(districting, W[1:hex,1:hex], Bin)
-
+    
 ## Define the objective function                
     @objective(districting, Min,
                     sum(workload[i,j] * W[i,j] for i = 1:hex, j = 1:hex if drivingtime[i,j] <= max_drive && potential_locations[i] == 1))
@@ -55,17 +55,17 @@ function districting_model(optcr::Float64,
     @constraint(districting, allocate_one[j = 1:hex],
                     sum(W[i,j] for i = 1:hex if potential_locations[i] == 1) == 1)
     @constraint(districting, district_count,
-                    sum(W[i,i] for i = 1:hex if potential_locations[i] == 1) <= number_districts)
+                    sum(Y[i] for i = 1:hex if potential_locations[i] == 1) <= number_districts)
     @constraint(districting, cut_nocenter[i = 1:hex, j = 1:hex; drivingtime[i,j] <= max_drive && potential_locations[i] == 1],
-                    W[i,j] - W[i,i] <= 0)
+                    W[i,j] - Y[i] <= 0)
     @constraint(districting, fix_above_drive[i = 1:hex, j = 1:hex; drivingtime[i,j] > max_drive || potential_locations[i] == 0],
                     W[i,j] == 0)
 
 ## Define the additional constraints regarding nearby district centers and fixed locations
     @constraint(districting, nearby_secure[i = 1:hex],
-                    sum(W[k,k] for k = 1:hex if drivingtime[i,k] <= nearby_radius && i !=k) >= nearby_districts * W[i,i])
+                    sum(W[k,k] for k = 1:hex if drivingtime[i,k] <= nearby_radius && i !=k) >= nearby_districts * Y[i])
     @constraint(districting, partially_fixed,
-                    sum(W[i,i] for i = 1:hex if current_locations[i] == 1) >= fixed_locations)
+                    sum(Y[i] for i = 1:hex if current_locations[i] == 1) >= fixed_locations)
 
 ## Define the contiguity and compactness constraints
     if compactness == "C0"

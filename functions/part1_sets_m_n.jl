@@ -1,4 +1,5 @@
 # prepare the sets N_{ij} and M_{ij} from the article
+# for further details take a look at our article
 function sets_m_n(airdist::Array{Float64,2}, 
                     hex::Int64)
     N = Array{Bool,3}(undef,hex,hex,hex) .= 0

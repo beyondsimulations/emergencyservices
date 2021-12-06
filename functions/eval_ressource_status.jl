@@ -1,7 +1,17 @@
+# function to aggregate the ressource flows of the simulation into
+# average weekly data over all locations
 function ressource_status(ressource_flow::Array{Int64,3},
                           incidents::DataFrame,
                           simulation_capacity::Array{Int64,2})
-    capacity_status = DataFrame(sum(ressource_flow, dims = 2)[:,1,:],[:at_location,:to_incident,:at_incident,:to_location,:at_backlog,:backlog_minutes])
+    # Dataframe to be filled
+    capacity_status = DataFrame(sum(ressource_flow, dims = 2)[:,1,:],
+                                        [:at_location,
+                                        :to_incident,
+                                        :at_incident,
+                                        :to_location,
+                                        :at_backlog,
+                                        :backlog_minutes])
+    # append the weekhour to the ressource flow DataFrame
     current_weekhour = incidents[1,:weekhour]
     current_minute   = minute(unix2datetime(incidents[1,:epoch]))
     capacity_status[:,:weekhour] .= 0
@@ -16,6 +26,7 @@ function ressource_status(ressource_flow::Array{Int64,3},
         capacity_status[i,:weekhour]  = current_weekhour
         current_minute +=1
     end
+    # group the DataFrame by weekhour
     capacity_status = groupby(capacity_status, :weekhour)
     capacity_status = combine(capacity_status,
                         :at_location => mean => :at_location,
@@ -26,8 +37,11 @@ function ressource_status(ressource_flow::Array{Int64,3},
                         :backlog_minutes => mean => :backlog_minutes)
     capacity_status = sort!(capacity_status, :weekhour)
 
+    # create an additional DataFrame to hold the average backlog for
+    # each weekhour over all locations
     backlog_status =  select!(copy(capacity_status), [:weekhour,:backlog_minutes])
     capacity_status = select!(capacity_status, Not([:backlog_minutes]))
     capacity_status = sort!(stack(capacity_status, 2:6), [:weekhour])
+    
     return capacity_status, backlog_status
 end

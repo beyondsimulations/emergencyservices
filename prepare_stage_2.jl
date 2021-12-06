@@ -1,4 +1,4 @@
-### simulation: DataFrame with all additional incident information created during the simulation
+# simulation: DataFrame with all additional incident information created during the simulation
     sim_data = DataFrame(incidentid                 = Int[], 
                          location_responsible       = Int[],
                          location_dispatched_first  = Union{Missing, Int}[],
@@ -24,7 +24,7 @@
                          cars_location_responsible  = 0))
     end
 
-### simulation_capacity: define the capacity of each location in each weekhour
+# simulation_capacity: apply a heuristic to derive the capacity of each location in each weekhour
     if real_capacity == false
         simulation_capacity, capacity_plot = capacity_heuristic(incidents::DataFrame,
                                                  sim_data::DataFrame,
@@ -32,7 +32,7 @@
                                                  min_capacity::Int64)
     end
 
-### ressource_flow: the ressource flow matrix of the simulation
+# ressource_flow: fill the intial ressource flow matrix of the simulation
     ressource_flow = ressource_flow_matrix(sim_data::DataFrame,
                                             incidents::DataFrame,
                                             simulation_capacity::Array{Int64,2})

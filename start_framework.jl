@@ -5,14 +5,14 @@
 # stage 1: only the optimisation will be executed
 # stage 2: only the simulation will be executed (requires at least one run of stage 1)
 # both:    both stages will be executed
-    framework = "both"
+    framework = "stage 2"
 
 # state the main input parameters for the optimisation (framework stage 1)
     problem          = "510"         # name of the problem instance that should be solved
-    number_districts = 10::Int64     # number of districts that should be opened
-    max_drive        = 40.0::Float64 # maximum driving distance (minutes) to district border
-    nearby_districts = 1::Int64      # minimal number of districts within nearby radius
-    nearby_radius    = 30.0::Float64 # maximal driving time to nearby district center
+    number_districts = 6::Int64     # number of districts that should be opened
+    max_drive        = 30.0::Float64 # maximum driving distance (minutes) to district border
+    nearby_districts = 2::Int64      # minimal number of districts within nearby radius
+    nearby_radius    = 20.0::Float64 # maximal driving time to nearby district center
     fixed_locations  = 0::Int64      # number of current locations that should not be moved
     plot_district    = true::Bool    # state whether the resulting district should be plotted
 
@@ -36,15 +36,15 @@
     compactness = "C2"        
     
 # state the weight of each priority for the driving time
-## important: the weight has to equal the number of priorities
-## in the incident data stage
+# important: the weight has to equal the number of priorities
+# in the incident data stage
     prio_weight = [1, 1, 1, 1, 1]
 
 # state the main parameters for the simulation (framework stage 2)
-    min_capacity   = 1::Int64      # minimal capacity for each district during each weekhour
+    min_capacity   = 2::Int64      # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
     backlog_max    = 30::Int64     # maximal average backlog (minutes) per car in district for exchange
-    max_queue      = 100::Int64    # maximal length of the queue of incidents per district
+    max_queue      = 30::Int64    # maximal length of the queue of incidents per district
     real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
     drop_incident  = 300::Int64    # total number of minutes after which an incident will leave the
                                    # will leave the queue even if it's not fully fulfilled
@@ -71,7 +71,7 @@
 if framework != "stage 2"
     print("\n Starting optimisation.")
 
-## Start the optimisation model
+# Start the optimisation model
 scnds = @elapsed districts, gap, objval = districting_model(optcr::Float64,
                                         reslim::Int64,
                                         cores::Int64,
@@ -94,26 +94,26 @@ scnds = @elapsed districts, gap, objval = districting_model(optcr::Float64,
                                         fixed_locations::Int64,
                                         opensource::Bool,
                                         silent::Bool)
-print("\n Duration of the optimisation: ", scnds, " seconds")
+    print("\n Duration of the optimisation: ", scnds, " seconds")
 
-## Plot the resulting district layout
+# Plot the resulting district layout
     if plot_district && hexshape !== nothing
         district_plot = plot_generation(districts, hexshape)
         display(district_plot)
     end
 
-## Save the resulting district layout
+# Save the resulting district layout
     CSV.write("results/district_layout_$problem", districts)
     print("\n Results written to file.")
 
-## End stage 1 of the framework
+# End stage 1 of the framework
 end
 
 # emergency service simulation (framework stage 2)
 if framework != "stage 1"
 
-## prepare the input data for the simulation
-### load the district layout in case solely stage 2 is executed
+# prepare the input data for the simulation
+# load the district layout in case solely stage 2 is executed
     if framework == "stage 2"
         print("\n Only stage 2 will be executed.")
         districts = CSV.read("results/district_layout_$problem", DataFrame)
@@ -122,12 +122,12 @@ if framework != "stage 1"
         print("\n Districts loaded from file.")
     end
 
-    # prepare the input data for stage 2
+# prepare the input data for stage 2
     include("prepare_stage_2.jl")
     print("\n Input sucessfully prepared for simulation.")
     print("\n Ressource matrix build.")
 
-### start the simulation
+# start the simulation
     scnds = @elapsed part2_simulation!(districts::DataFrame,
                       incidents::DataFrame,
                       sim_data::DataFrame,
@@ -142,18 +142,19 @@ if framework != "stage 1"
     round(Int64,sum(ressource_flow[1:size(ressource_flow,1)-1000,:,1:5]
                                     /(size(ressource_flow,1)-1000))))
 
-## plot the results
-    include("plot_results.jl")
+# plot the results
+    include("prepare_results.jl")
     print("\n Framework completed.")
     print("\n Main results:")
-    print("\n Average dispatch time:          ", 
-            round(overall_missing[1,:dispatch_time_first],digits=2))
-    print("\n Average response time:          ", 
-            round(overall_missing[1,:response_time_first],digits=2))
-    print("\n Average exchange ratio:         ", 
-            round(1-overall_missing[1,:cars_location_responsible]/
-                    overall_missing[1,:dispatched_cars], digits = 2))
-    print("\n Unfullfilled calls for service: ", 
+    print("\n Average dispatch time:           ", 
+            overall_missing[1,:dispatch_time_first])
+    print("\n Average response time:           ", 
+            overall_missing[1,:response_time_first])
+    print("\n Average exchange ratio:          ", 
+            overall_missing[1,:exchange_ratio])
+    print("\n Average ratio undispatched cars: ", 
+            overall_missing[1,:ratio_cars_undispatched])
+    print("\n Unfullfilled calls for service:  ", 
             overall_missing[1,:incidents_unfulfilled])
 end 
 

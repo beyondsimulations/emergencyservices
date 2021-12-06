@@ -1,4 +1,4 @@
-# Function that generates the ressource flow matrix the
+# function that generates the ressource flow matrix the
 # sim_data is build on
 function ressource_flow_matrix(sim_data::DataFrame,
                                incidents::DataFrame,

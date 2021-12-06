@@ -1,3 +1,4 @@
+# function that handles the dispatch of cars
 function incident_dispatch!(sim_data::DataFrame,
                             incidents::DataFrame,
                             ressource_flow::Array{Int64,3},
@@ -9,14 +10,12 @@ function incident_dispatch!(sim_data::DataFrame,
                             i::Int64,
                             k::Int64,
                             own_district::Int64)
-##  save the incident_location and the locations of the arrival_district_center
+#  save the incident_location and the locations of the arrival_district_center
     incident_location = incidents[current_case,:location]
     district_center = locations[i]
-
-## calculate the minute the car will arrive at the incident location
+# calculate the minute the car will arrive at the incident location
     arrival_incident = now .+ dispatch_drivingtime(drivingtime[district_center,incident_location],traffic,now)
-
-## calculate the minute of arrival at the incident and the minute of departure from the incident
+# calculate the minute of arrival at the incident and the minute of departure from the incident
     if sim_data[current_case,:cars_dispatched] == 0
         departure_incident      = arrival_incident + incidents[current_case,:length]
         arrival_district_center = departure_incident + dispatch_drivingtime(drivingtime[incident_location,district_center],
@@ -30,9 +29,9 @@ function incident_dispatch!(sim_data::DataFrame,
                                                                             traffic,departure_incident)
                                   
     end
-## calculate the number of cars to dispatch
-## k = 1: only one car will be dispatched
-## k = 2: the number of dispatched cars dependends on the availability
+# calculate the number of cars to dispatch
+# k = 1: only one car will be dispatched
+# k = 2: the number of dispatched cars dependends on the availability
     if k == 1
         if ressource_flow[now,i,1] > 0
             cars_backlog = 0
@@ -50,8 +49,7 @@ function incident_dispatch!(sim_data::DataFrame,
             cars_backlog = 1
         end
     end
-
-    ## Write the calculated capacities into the ressource flow matrix
+    # write the calculated capacities into the ressource flow matrix
     ressource_flow[now,i,1]                     -= cars_free
     ressource_flow[now,i,5]                     -= cars_backlog
     ressource_flow[now,i,2]                     += cars_free + cars_backlog
@@ -61,8 +59,7 @@ function incident_dispatch!(sim_data::DataFrame,
     ressource_flow[departure_incident,i,4]      += cars_free + cars_backlog
     ressource_flow[arrival_district_center,i,4] -= cars_free + cars_backlog
     ressource_flow[arrival_district_center,i,1] += cars_free + cars_backlog
-    
-    ## Write the resulting times to the sim_data DataFrame
+    # write the resulting times to the sim_data DataFrame
     if sim_data[current_case,:cars_dispatched] == 0
         sim_data[current_case,:location_dispatched_first] = locations[i]
         sim_data[current_case,:dispatch_minute_first]     = now
