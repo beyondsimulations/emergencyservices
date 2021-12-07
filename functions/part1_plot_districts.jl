@@ -1,6 +1,6 @@
 # Function to generate a plot from the district results
 function plot_generation(districts, hexshape)
-    plot_area = plot(size=(300, 600), axis=false, ticks=false)
+    plot_area = plot(axis=false, ticks=false)
     if length(unique(districts.location)) > 1
         districts.shape = hexshape.geometry
         normalized_values_area = equalize(districts.location)

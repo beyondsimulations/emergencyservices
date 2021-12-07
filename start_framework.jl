@@ -9,17 +9,17 @@
 
 # state the main input parameters for the optimisation (framework stage 1)
     problem          = "510"         # name of the problem instance that should be solved
-    number_districts = 6::Int64     # number of districts that should be opened
+    number_districts = 5::Int64      # number of districts that should be opened
     max_drive        = 30.0::Float64 # maximum driving distance (minutes) to district border
-    nearby_districts = 2::Int64      # minimal number of districts within nearby radius
-    nearby_radius    = 20.0::Float64 # maximal driving time to nearby district center
+    nearby_districts = 1::Int64      # minimal number of districts within nearby radius
+    nearby_radius    = 15.0::Float64 # maximal driving time to nearby district center
     fixed_locations  = 0::Int64      # number of current locations that should not be moved
     plot_district    = true::Bool    # state whether the resulting district should be plotted
 
 # state the optimisation options
     optcr   = 0.000::Float64         # allowed gap
     reslim  = 10800::Int64           # maximal duration of optmisation in seconds
-    cores   = 4::Int64               # number of CPU cores
+    cores   = 8::Int64               # number of CPU cores
     nodlim  = 1000000::Int64         # maximal number of nodes
     iterlim = 1000000::Int64         # maximal number of iterations
     silent  = true::Bool             # state whether to surpress the optimisation log
@@ -58,9 +58,12 @@
 # important: the exchange_reserve has to equal the number of priorities
     exchange_reserve = [0,0,0,0,0]
 
+# state whether to save the plotted results
+    save_plots = true::Bool # save the plots
+
 # load the input data
     include("load_input.jl")
-    print("\n\n Input data sucessfully loaded.")
+    print("\n Input data sucessfully loaded.")
 
 # prepare the input data for stage 1 (also neccessary for stage 2!)
     include("prepare_stage_1.jl")
@@ -100,11 +103,14 @@ scnds = @elapsed districts, gap, objval = districting_model(optcr::Float64,
     if plot_district && hexshape !== nothing
         district_plot = plot_generation(districts, hexshape)
         display(district_plot)
+        if save_plots == 1
+            savefig("graphs/district_layout_$problem.pdf")
+        end
     end
 
 # Save the resulting district layout
     CSV.write("results/district_layout_$problem", districts)
-    print("\n Results written to file.")
+    print("\n Results from stage 1 written to file.")
 
 # End stage 1 of the framework
 end
@@ -156,5 +162,8 @@ if framework != "stage 1"
             overall_missing[1,:ratio_cars_undispatched])
     print("\n Unfullfilled calls for service:  ", 
             overall_missing[1,:incidents_unfulfilled])
+    CSV.write("results/summary_$problem", overall_skipmissing)
+    print("\n Results from stage 2 written to file.")
+    print("\n")
 end 
 

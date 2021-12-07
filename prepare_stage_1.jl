@@ -1,4 +1,11 @@
-# prepare the input data for stage 1 of the framework:
+# prepare the input data for stage 1 of the framework
+# Create a theme for the Plots
+    theme(:vibrant,
+    titlefontsize = 10,
+    legendfontsize = 6,
+    legendtitlefontsize = 8,
+    size = (800,400), show = true, dpi = 300,
+    legend = :outerright)
 # Determine the number of hexagons in this problem instance
     hex = size(airdist,1)
 
