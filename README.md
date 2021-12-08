@@ -6,7 +6,6 @@ This repository contains the code used in a currently anonymised article. It con
 This repository contains the following parts:
 1. Emergency Service District Optimisation
 2. Emergency Service Simulation
-The choice of heuristics as well as parameters can be controlled in the file "main_benchmark_seetings.jl".
 
 ## Built with
 * [Julia](https://github.com/JuliaLang)
@@ -17,7 +16,7 @@ The choice of heuristics as well as parameters can be controlled in the file "ma
 
 ## Getting started
 ### Prerequisites
-Julia 1.6 and GAMS have to be installed on the machine executing the code in this repository. Furthermore, a valid GAMS license is neccessary to solve the districting optimisation with CPLEX. Else choose the option "opensource = true" in the file "start_framework.jl" to change from CPLEX to Cbc. Note, that Cbc is much slower than CPLEX by a factor of 150.
+Julia 1.6 and GAMS have to be installed on the machine executing the code in this repository. Furthermore, a valid GAMS license is neccessary to solve the districting optimisation with CPLEX. Alternatively, you can choose the option "opensource = true" in the file "start_framework.jl" to switch from CPLEX to Cbc. Note, that Cbc is much slower than CPLEX (by a factor of 200 on our problems).
 
 ### Installation
 1. Install Julia 1.6 and GAMS (use a valid GAMS license and installation if you want to use CPLEX for the district optimisation)
@@ -31,7 +30,7 @@ Julia 1.6 and GAMS have to be installed on the machine executing the code in thi
 4. All graphs are saved in the folder "graphs"
 
 ### Apply the benchmark on own datasets
-To apply the benchmark on your own dataset you have to allocate several new files in the folder "data". A detailed instruction of all files and possibilities is listed in the file "load_input.jl". Execute the follwing steps two start the benchmark after all your files are allocated correctly:
+To apply the benchmark on your own dataset you have to allocate several new files in the folder "data". A detailed instruction of all files and possibilities is listed in the file "load_input.jl". Execute the following steps to start the benchmark after all your files are allocated correctly:
 1. Rename the variable "problem" in "main_benchmark_settings.jl" after "your_experiment_name" used in all your files
 2. Further parameters can be adjusted as explained in "start_framework.jl"
 3. Execute the file "start_framework.jl" to start the benchmark

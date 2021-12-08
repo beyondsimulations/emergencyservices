@@ -1,4 +1,4 @@
-# load all necessary packages
+# load all necessary packages and functions
     include("load_packages.jl")
 
 # state the parts of the framework that should be executed
@@ -43,10 +43,10 @@
 # state the main parameters for the simulation (framework stage 2)
     min_capacity   = 2::Int64      # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
-    backlog_max    = 30::Int64     # maximal average backlog (minutes) per car in district for exchange
-    max_queue      = 30::Int64    # maximal length of the queue of incidents per district
+    backlog_max    = 45::Int64     # maximal average backlog (minutes) per car in district for exchange
+    max_queue      = 25::Int64    # maximal length of the queue of incidents per district
     real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
-    drop_incident  = 300::Int64    # total number of minutes after which an incident will leave the
+    drop_incident  = 300::Int64    # total number of minutes after which an incident
                                    # will leave the queue even if it's not fully fulfilled
 
 # state the main parameters for the capacity estimation if no capacity plan is given
@@ -66,7 +66,7 @@
     print("\n Input data sucessfully loaded.")
 
 # prepare the input data for stage 1 (also neccessary for stage 2!)
-    include("prepare_stage_1.jl")
+    include("framework/prepare_stage_1.jl")
     print("\n Input sucessfully prepared for both stages.")
 
 
@@ -129,7 +129,7 @@ if framework != "stage 1"
     end
 
 # prepare the input data for stage 2
-    include("prepare_stage_2.jl")
+    include("framework/prepare_stage_2.jl")
     print("\n Input sucessfully prepared for simulation.")
     print("\n Ressource matrix build.")
 
@@ -149,7 +149,7 @@ if framework != "stage 1"
                                     /(size(ressource_flow,1)-1000))))
 
 # plot the results
-    include("prepare_results.jl")
+    include("framework/prepare_results.jl")
     print("\n Framework completed.")
     print("\n Main results:")
     print("\n Average dispatch time:           ", 
