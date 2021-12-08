@@ -14,11 +14,11 @@ function fill_queues!(sim_data::DataFrame,
     ## queue_used: array that saves whether a queue is in use
         queue_used .= 1
     ##  fill the incident queue with all new cases arriving during the new minute "mnt"
-    while sim_data[cin,:incident_minute] == mnt && cin < card_incidents
+    while cin <= card_incidents && sim_data[cin,:incident_minute] == mnt
         responsible_district = location_district[sim_data[cin,:location_responsible]]
         incident_priority = incidents[cin,:priority]
         if queue_used[responsible_district,incident_priority] > max_queue
-            print("incident queue is to short in district",responsible_district,"!")
+            error("incident queue is to short in district",responsible_district,"!")
         else
             if ismissing(incident_queue[queue_used[responsible_district,incident_priority],responsible_district,incident_priority])
                 incident_queue[queue_used[responsible_district,incident_priority],responsible_district,incident_priority] = cin

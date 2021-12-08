@@ -18,7 +18,7 @@
 
 # state the optimisation options
     optcr   = 0.000::Float64         # allowed gap
-    reslim  = 10800::Int64           # maximal duration of optmisation in seconds
+    reslim  = 10800::Int64           # maximal duration of optimisation in seconds
     cores   = 8::Int64               # number of CPU cores
     nodlim  = 1000000::Int64         # maximal number of nodes
     iterlim = 1000000::Int64         # maximal number of iterations
@@ -44,7 +44,7 @@
     min_capacity   = 1::Int64      # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
     backlog_max    = 30::Int64     # maximal average backlog (minutes) per car in district for exchange
-    max_queue      = 25::Int64    # maximal length of the queue of incidents per district
+    max_queue      = 15::Int64     # maximal length of the queue of incidents per district and priority
     real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
     drop_incident  = 300::Int64    # total number of minutes after which an incident
                                    # will leave the queue even if it's not fully fulfilled
