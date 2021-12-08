@@ -86,8 +86,6 @@
                                                     overall_missing[!,:dispatched_cars]
     overall_missing = round.(overall_missing,digits=4)
         
-
-
 # 5. create a DataFrame that holds the ressource flow during the simulation
     capacity_status, backlog_status = ressource_status(ressource_flow::Array{Int64,3},
                                                        incidents::DataFrame,

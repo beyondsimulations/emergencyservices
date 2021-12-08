@@ -20,3 +20,22 @@
 # prepare the sets for the contiguity and compactness constraints
     N, M, card_n, card_m = sets_m_n(airdist::Array{Float64,2}, 
                                     hex::Int64)
+
+# create a structure for each incident
+    struct incident
+        id::Int64
+        loc_responsible::Int64
+        loc_incident::Int64
+        duration::Int64
+        backlog::Int64
+        loc_dispatched_first::Int64
+        epoch::Int64
+        minute::Int64
+        dispatch_first::Int64
+        dispatch_all::Int64
+        arrival_first::Int64
+        arrival_all::Int64
+        cars_requested::Int64
+        cars_dispatched::Int64
+        cars_loc_responsible::Int64
+    end

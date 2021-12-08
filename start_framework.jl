@@ -41,16 +41,16 @@
     prio_weight = [1, 1, 1, 1, 1]
 
 # state the main parameters for the simulation (framework stage 2)
-    min_capacity   = 2::Int64      # minimal capacity for each district during each weekhour
+    min_capacity   = 1::Int64      # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
-    backlog_max    = 45::Int64     # maximal average backlog (minutes) per car in district for exchange
+    backlog_max    = 30::Int64     # maximal average backlog (minutes) per car in district for exchange
     max_queue      = 25::Int64    # maximal length of the queue of incidents per district
     real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
     drop_incident  = 300::Int64    # total number of minutes after which an incident
                                    # will leave the queue even if it's not fully fulfilled
 
 # state the main parameters for the capacity estimation if no capacity plan is given
-    total_capacity   = 50::Int64        # average capacity per hour in the area over the incident timeframe
+    total_capacity   = 60::Int64        # average capacity per hour in the area over the incident timeframe
     capacity_service = 0.90::Float64    # alpha service level for weekhour workload estimation
 
 # state how many cars should be reserved for the own district per incident priority
@@ -109,7 +109,7 @@ scnds = @elapsed districts, gap, objval = districting_model(optcr::Float64,
     end
 
 # Save the resulting district layout
-    CSV.write("results/district_layout_$problem", districts)
+    CSV.write("results/district_layout_$problem.csv", districts)
     print("\n Results from stage 1 written to file.")
 
 # End stage 1 of the framework
@@ -122,7 +122,7 @@ if framework != "stage 1"
 # load the district layout in case solely stage 2 is executed
     if framework == "stage 2"
         print("\n Only stage 2 will be executed.")
-        districts = CSV.read("results/district_layout_$problem", DataFrame)
+        districts = CSV.read("results/district_layout_$problem.csv", DataFrame)
         districts[!,:index] = convert.(Int64,districts[!,:index])
         districts[!,:location] = convert.(Int64,districts[!,:location])
         print("\n Districts loaded from file.")
@@ -162,7 +162,7 @@ if framework != "stage 1"
             overall_missing[1,:ratio_cars_undispatched])
     print("\n Unfullfilled calls for service:  ", 
             overall_missing[1,:incidents_unfulfilled])
-    CSV.write("results/summary_$problem", overall_skipmissing)
+    CSV.write("results/summary_$problem.csv", overall_missing)
     print("\n Results from stage 2 written to file.")
     print("\n")
 end 

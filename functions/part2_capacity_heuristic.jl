@@ -71,7 +71,7 @@
     # group the resulting workload to generate a mean hourly workload for each
     # district per shift
         shifts_time = groupby(incidents_time,[:location, :shift])
-        shifts_time = combine(shifts_time,:workload => mean => :workload,nrow => :shift_hours)
+        shifts_time = combine(shifts_time,:workload => maximum => :workload, nrow => :shift_hours)
         shift_length = groupby(shifts_time, :shift)
         shift_length = combine(shift_length, :shift_hours => maximum => :shift_hours)
         shifts_time = select!(shifts_time, Not([:shift_hours]))
