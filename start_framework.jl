@@ -19,7 +19,7 @@
 # state the optimisation options
     optcr   = 0.000::Float64         # allowed gap
     reslim  = 10800::Int64           # maximal duration of optimisation in seconds
-    cores   = 8::Int64               # number of CPU cores
+    cores   = 6::Int64               # number of CPU cores
     nodlim  = 1000000::Int64         # maximal number of nodes
     iterlim = 1000000::Int64         # maximal number of iterations
     silent  = true::Bool             # state whether to surpress the optimisation log
@@ -44,7 +44,7 @@
     min_capacity   = 1::Int64      # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
     backlog_max    = 30::Int64     # maximal average backlog (minutes) per car in district for exchange
-    max_queue      = 15::Int64     # maximal length of the queue of incidents per district and priority
+    max_queue      = 30::Int64     # maximal length of the queue of incidents per district and priority
     real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
     drop_incident  = 300::Int64    # total number of minutes after which an incident
                                    # will leave the queue even if it's not fully fulfilled
@@ -134,7 +134,8 @@ if framework != "stage 1"
     print("\n Ressource matrix build.")
 
 # start the simulation
-    scnds = @elapsed part2_simulation!(districts::DataFrame,
+    #scnds = @elapsed part2_simulation!(districts::DataFrame,
+    @time part2_simulation!(districts::DataFrame,
                       incidents::DataFrame,
                       sim_data::DataFrame,
                       ressource_flow::Array{Int64,3},
@@ -143,7 +144,7 @@ if framework != "stage 1"
                       max_drive::Float64,
                       drop_incident)
     print("\n Simulation completed.")
-    print("\n Duration of the simulation: ", scnds, " seconds")
+    #print("\n Duration of the simulation: ", scnds, " seconds")
     print("\n Average ressources allocated to districts during simulation: ",
     round(Int64,sum(ressource_flow[1:size(ressource_flow,1)-1000,:,1:5]
                                     /(size(ressource_flow,1)-1000))))

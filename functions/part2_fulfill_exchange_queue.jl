@@ -23,7 +23,7 @@ function fulfill_exchange_queue!(incidents::DataFrame,
             # check for all districts within an acceptable perimeter
             # how long the driving time would take during the current
             # traffic flow
-            for i = 1:card_districts
+            @simd for i = 1:card_districts
                 if ressource_flow[mnt,i,1] > exchange_reserve[p] &&
                     drivingtime[locations[i],incidents[current_case,:location]] <=
                     max_drive

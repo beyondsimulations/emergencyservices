@@ -1,2 +1,2 @@
 total_incidents_fulfilled,requested_cars,dispatched_cars,dispatch_time_first,response_time_first,driving_time_first,cars_missing,cars_location_responsible,incidents_unfulfilled,cars_total_dispatched,exchange_ratio,ratio_cars_undispatched
-100000.0,1.3683,1.366,2.5068,7.5406,5.0338,0.0023,1.0687,0.0,136602.0,0.2177,0.0017
+50000.0,1.37,1.3677,3.1426,9.3836,6.241,0.0023,0.9924,0.0,68386.0,0.2744,0.0017
