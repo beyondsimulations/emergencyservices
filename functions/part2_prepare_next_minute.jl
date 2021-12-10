@@ -10,7 +10,7 @@ function prepare_next_minute!(sim_data::DataFrame,
                               drop_incident::Int64)
     # if a location has unused ressources and a backlog, the ressources are assigned
     # to work on the backlog as long as there is a backlog left
-    @simd for i = 1:size(ressource_flow,2)
+    for i = 1:size(ressource_flow,2)
         if ressource_flow[mnt,i,1] > 0 && ressource_flow[mnt,i,6] > 0
             ressource_flow[mnt,i,5] += min(ressource_flow[mnt,i,1],ressource_flow[mnt,i,6])
             ressource_flow[mnt,i,1] -= min(ressource_flow[mnt,i,1],ressource_flow[mnt,i,6])
@@ -24,7 +24,7 @@ function prepare_next_minute!(sim_data::DataFrame,
     end
     # drop all fulfilled incidents and the incidents that pass the "drop_incident" threshold from
     # the incident queues
-    @simd for i = 1:size(incident_queue,2)
+    for i = 1:size(incident_queue,2)
         for p = 1:size(incident_queue,3)
             for j = 1:size(incident_queue,1)
                 if ismissing(incident_queue[j,i,p]) == false
@@ -43,7 +43,7 @@ function prepare_next_minute!(sim_data::DataFrame,
     end
     # move the current ressource status to the next minute
     if mnt + 1 <= size(ressource_flow,1)
-        @simd for i = 1:size(ressource_flow,2)
+        for i = 1:size(ressource_flow,2)
             for j = 1:size(ressource_flow,3)
                 ressource_flow[mnt+1,i,j] += ressource_flow[mnt,i,j]
             end

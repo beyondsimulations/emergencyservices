@@ -30,12 +30,12 @@ function ressource_flow_matrix(sim_data::DataFrame,
             current_weekhour += 1
             if current_weekhour == 1
                 ressource_flow[i,:,1] .= 
-                simulation_capacity[current_weekhour,:] - 
-                simulation_capacity[size(simulation_capacity,1),:]
+                @view(simulation_capacity[current_weekhour,:]) - 
+                @view(simulation_capacity[size(simulation_capacity,1),:])
             else
                 ressource_flow[i,:,1] .= 
-                simulation_capacity[current_weekhour,:] - 
-                simulation_capacity[current_weekhour-1,:]
+                @view(simulation_capacity[current_weekhour,:]) - 
+                @view(simulation_capacity[current_weekhour-1,:])
             end
         end
         current_minute +=1

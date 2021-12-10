@@ -16,9 +16,9 @@ function fill_queues!(sim_data::DataFrame,
     #    queue_used .= 1
     ## sort the incident queues after the incidents with the longest waiting time 
     for p = 1:card_priorities
-        @simd for i = 1:card_districts
+        for i = 1:card_districts
             if queue_change[i,p] == true
-                incident_queue[:,i,p] = sort!(incident_queue[:,i,p], alg=InsertionSort)
+                incident_queue[:,i,p] = sort!(@view(incident_queue[:,i,p]))
                 queue_change[i,p] = false
             end
         end
