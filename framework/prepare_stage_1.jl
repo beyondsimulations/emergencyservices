@@ -6,6 +6,7 @@
     legendtitlefontsize = 8,
     size = (800,400), show = true, dpi = 300,
     legend = :outerright)
+    
 # Determine the number of hexagons in this problem instance
     hex = size(airdist,1)
 

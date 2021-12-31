@@ -13,7 +13,7 @@
     total_days = 84
 
 # number of hexagons
-    hexsize = 510
+    hexsize = 2010
 
 # create DataFrame for the storage of incidents
     incidents = DataFrame(incidentid = Int[], 
