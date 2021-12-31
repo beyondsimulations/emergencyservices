@@ -134,8 +134,7 @@ if framework != "stage 1"
     print("\n Ressource matrix build.")
 
 # start the simulation
-    #scnds = @elapsed part2_simulation!(districts::DataFrame,
-    @time part2_simulation!(districts::DataFrame,
+    scnds = @elapsed part2_simulation!(districts::DataFrame,
                       incidents::DataFrame,
                       sim_data::DataFrame,
                       ressource_flow::Array{Int64,3},
@@ -144,7 +143,7 @@ if framework != "stage 1"
                       max_drive::Float64,
                       drop_incident)
     print("\n Simulation completed.")
-    #print("\n Duration of the simulation: ", scnds, " seconds")
+    print("\n Duration of the simulation: ", scnds, " seconds")
     print("\n Average ressources allocated to districts during simulation: ",
     round(Int64,sum(ressource_flow[1:size(ressource_flow,1)-1000,:,1:5]
                                     /(size(ressource_flow,1)-1000))))

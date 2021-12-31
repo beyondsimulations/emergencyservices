@@ -16,7 +16,7 @@ This repository contains the following parts:
 
 ## Getting started
 ### Prerequisites
-Julia 1.6 and GAMS have to be installed on the machine executing the code in this repository. Furthermore, a valid GAMS license is neccessary to solve the districting optimisation with CPLEX. Alternatively, you can choose the option "opensource = true" in the file "start_framework.jl" to switch from CPLEX to Cbc. Note, that Cbc is much slower than CPLEX (by a factor of 200 on our problems).
+Julia 1.7 and GAMS have to be installed on the machine executing the code in this repository. Furthermore, a valid GAMS license is neccessary to solve the districting optimisation with CPLEX. Alternatively, you can choose the option "opensource = true" in the file "start_framework.jl" to switch from CPLEX to Cbc. Note, that Cbc is much slower than CPLEX (by a factor of 200 on our problems).
 
 ### Installation
 1. Install Julia 1.6 and GAMS (use a valid GAMS license and installation if you want to use CPLEX for the district optimisation)
