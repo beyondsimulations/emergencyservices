@@ -5,11 +5,14 @@
 # stage 1: only the optimisation will be executed
 # stage 2: only the simulation will be executed (requires at least one run of stage 1)
 # both:    both stages will be executed
-    framework = "stage 2"
+    framework = "stage 2"::String
+
+# state the name of the problem instance that should be solved, possible examples
+# are "0510","1008","1508","2010" where the name corresponds to the number of BAs
+    problem  = "1008"::String  
 
 # state the main input parameters for the optimisation (framework stage 1)
-    problem          = "510"         # name of the problem instance that should be solved
-    number_districts = 5::Int64      # number of districts that should be opened
+    number_districts = 6::Int64      # number of districts that should be opened
     max_drive        = 30.0::Float64 # maximum driving distance (minutes) to district border
     nearby_districts = 1::Int64      # minimal number of districts within nearby radius
     nearby_radius    = 15.0::Float64 # maximal driving time to nearby district center
@@ -19,10 +22,10 @@
 # state the optimisation options
     optcr   = 0.000::Float64         # allowed gap
     reslim  = 10800::Int64           # maximal duration of optimisation in seconds
-    cores   = 6::Int64               # number of CPU cores
+    cores   = 8::Int64               # number of CPU cores
     nodlim  = 1000000::Int64         # maximal number of nodes
     iterlim = 1000000::Int64         # maximal number of iterations
-    silent  = true::Bool             # state whether to surpress the optimisation log
+    silent  = false::Bool             # state whether to surpress the optimisation log
 
 # state whether to use CPLEX via GAMS or the open source solver CBC
     opensource = false
@@ -44,13 +47,13 @@
     min_capacity   = 1::Int64      # minimal capacity for each district during each weekhour
     exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
     backlog_max    = 30::Int64     # maximal average backlog (minutes) per car in district for exchange
-    max_queue      = 30::Int64     # maximal length of the queue of incidents per district and priority
+    max_queue      = 50::Int64     # maximal length of the queue of incidents per district and priority
     real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
     drop_incident  = 300::Int64    # total number of minutes after which an incident
                                    # will leave the queue even if it's not fully fulfilled
 
 # state the main parameters for the capacity estimation if no capacity plan is given
-    total_capacity   = 60::Int64        # average capacity per hour in the area over the incident timeframe
+    total_capacity   = 75::Int64        # average capacity per hour in the area over the incident timeframe
     capacity_service = 0.90::Float64    # alpha service level for weekhour workload estimation
 
 # state how many cars should be reserved for the own district per incident priority

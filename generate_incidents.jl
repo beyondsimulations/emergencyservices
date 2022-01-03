@@ -7,13 +7,13 @@
     using Plots
 
 # number of random incidents to generate
-    random_incidents = 50000
+    random_incidents = 80000
 
 # number of days for generated data
     total_days = 84
 
 # number of hexagons
-    hexsize = 2010
+    hexsize = 0510
 
 # create DataFrame for the storage of incidents
     incidents = DataFrame(incidentid = Int[], 
