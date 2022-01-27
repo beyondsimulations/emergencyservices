@@ -25,3 +25,13 @@ Manifest.toml
 
 # PDF Files with the resulting graphs
 *.pdf
+
+# data from the anonymous cases studies
+data/germany
+data/germany_new
+data/belgium
+data/belgium_new
+grids/germany
+grids/belgium
+archive
+data/archive

@@ -5,11 +5,11 @@
 # stage 1: only the optimisation will be executed
 # stage 2: only the simulation will be executed (requires at least one run of stage 1)
 # both:    both stages will be executed
-    framework = "stage 2"::String
+    framework = "both"::String
 
 # state the name of the problem instance that should be solved, possible examples
 # are "0510","1008","1508","2010" where the name corresponds to the number of BAs
-    problem  = "1008"::String  
+    problem  = "0510"::String  
 
 # state the main input parameters for the optimisation (framework stage 1)
     number_districts = 6::Int64      # number of districts that should be opened

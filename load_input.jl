@@ -11,21 +11,21 @@
 ###           where the incident took place (Int)
 ### column 7: epoch -> epoch time of the beginning of the incident
 ###           in seconds (Int)
-    incidents = CSV.read("data/incidents_$problem.csv", DataFrame)
+    incidents = CSV.read("data/$problem/incidents_$problem.csv", DataFrame)
 
 # load the aerial distances between the basic areas (necessary)
 ## 2-dimensional array containing the airial distance between all
 ## combinations of basic areas (scale irrelevant, Float64)
 ## example: row 3 column 5 corresponds to the airial distance
 ##          between basic area 3 and basic area 5
-    airdist = readdlm("data/airdistances_$problem.csv", ',', Float64)
+    airdist = readdlm("data/$problem/airdistances_$problem.csv", ',', Float64)
 
 # load the driving times between the basic areas(necessary)
 ## 2-dimensional array containing the driving time between all
 ## combinations of basic areas in minutes (Float64)
 ## example: row 3 column 5 corresponds to the driving time
 ##          between basic area 3 and basic area 5 in minutes
-    drivingtime = readdlm("data/drivingtimes_$problem.csv", ',', Float64)
+    drivingtime = readdlm("data/$problem/drivingtimes_$problem.csv", ',', Float64)
 
 # load the shift pattern for each weekhour (necessary)
 ## array with 168 entrys, each entry corresponds to one weekhour
@@ -36,7 +36,7 @@
 ## array with 168 rows, where each entry corresponds to one weekhour
 ## the number of rows depends on the number of districts (number_districts)
     if real_capacity == true
-        simulation_capacity = readdlm("data/capacity_$problem.csv", ',', Int64)
+        simulation_capacity = readdlm("data/$problem/capacity_$problem.csv", ',', Int64)
         if size(simulation_capacity,2) != number_districts
             error("Number of districts does not match with the capacity plan!")
         end
@@ -50,7 +50,7 @@
 ##          between basic area 3 and basic area 5
 ## if no data is available, a matrix is created based on the 
 ## airial distance between the hexagonal BAs
-    if isfile("data/adjacency_$problem.csv")
+    if isfile("data/$problem/adjacency_$problem.csv")
         adjacent = readdlm("data/adjacency_$problem.csv", ',', Bool)
     else
         adjacent = adjacency_matrix(airdist::Array{Float64,2})
@@ -96,7 +96,7 @@
 ## for our model:
 ### column :id hexagon id
 ### column :geometry shape file of the hexagon
-    if isfile("grids/grid_$problem.shp")
+    if isfile("grids/$problem/grid_$problem.shp")
         hexshape = Shapefile.Table("grids/grid_$problem.shp")
         hexshape = DataFrame(hexshape)
         hexshape = sort!(hexshape, :id)
