@@ -8,10 +8,8 @@
     using Shapefile
     using Plots
     using StatsPlots
-    using GAMS
     using Dates
     using Distributions
-    using Cbc
 
 # necessary functions for the framework
     include("functions/both_adjacency_matrix.jl")

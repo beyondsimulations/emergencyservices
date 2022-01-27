@@ -97,7 +97,7 @@
 ### column :id hexagon id
 ### column :geometry shape file of the hexagon
     if isfile("grids/$problem/grid_$problem.shp")
-        hexshape = Shapefile.Table("grids/grid_$problem.shp")
+        hexshape = Shapefile.Table("grids/$problem/grid_$problem.shp")
         hexshape = DataFrame(hexshape)
         hexshape = sort!(hexshape, :id)
     else

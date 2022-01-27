@@ -1,3 +1,6 @@
+import Pkg
+Pkg.activate("emergency_services")
+
 # load all necessary packages and functions
     include("load_packages.jl")
 
@@ -26,9 +29,6 @@
     nodlim  = 1000000::Int64         # maximal number of nodes
     iterlim = 1000000::Int64         # maximal number of iterations
     silent  = false::Bool             # state whether to surpress the optimisation log
-
-# state whether to use CPLEX via GAMS or the open source solver CBC
-    opensource = false
 
 # state the strength of the compactness and contiguity constraints
 # C0 = no contiguity constraints (no compactness)
@@ -98,7 +98,6 @@ scnds = @elapsed districts, gap, objval = districting_model(optcr::Float64,
                                         nearby_districts::Int64,
                                         current_locations::Vector{Bool},
                                         fixed_locations::Int64,
-                                        opensource::Bool,
                                         silent::Bool)
     print("\n Duration of the optimisation: ", scnds, " seconds")
 

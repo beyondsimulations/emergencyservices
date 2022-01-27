@@ -19,24 +19,16 @@ function districting_model(optcr::Float64,
                             nearby_districts::Int64,
                             current_locations::Vector{Bool},
                             fixed_locations::Int64,
-                            opensource::Bool,
                             silent_optimisation::Bool)
 # Initialise the GAMS model instance
-    if opensource == true
-        districting = Model(Cbc.Optimizer)
-        set_optimizer_attribute(districting, "logLevel", 1)
-        set_optimizer_attribute(districting, "ratioGap",  optcr)
-        set_optimizer_attribute(districting, "seconds",   reslim)
-        set_optimizer_attribute(districting, "maxNodes",  nodlim)
-    else
-        districting = Model(GAMS.Optimizer)
-        set_optimizer_attribute(districting, GAMS.ModelType(), "MIP")
-        set_optimizer_attribute(districting, "Solver",    "CPLEX")
-        set_optimizer_attribute(districting, "IterLim",   iterlim)
-        set_optimizer_attribute(districting, "optCr",     optcr)
-        set_optimizer_attribute(districting, "ResLim",    reslim)
-        set_optimizer_attribute(districting, "NodLim",    nodlim)
-    end
+
+    districting = Model(GAMS.Optimizer)
+    set_optimizer_attribute(districting, GAMS.ModelType(), "MIP")
+    set_optimizer_attribute(districting, "Solver",    "CPLEX")
+    set_optimizer_attribute(districting, "IterLim",   iterlim)
+    set_optimizer_attribute(districting, "optCr",     optcr)
+    set_optimizer_attribute(districting, "ResLim",    reslim)
+    set_optimizer_attribute(districting, "NodLim",    nodlim)
     set_optimizer_attribute(districting, "threads",    cores)
 
     if silent_optimisation == true
