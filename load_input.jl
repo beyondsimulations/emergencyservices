@@ -18,28 +18,29 @@
 ## combinations of basic areas (scale irrelevant, Float64)
 ## example: row 3 column 5 corresponds to the airial distance
 ##          between basic area 3 and basic area 5
-    airdist = readdlm("data/$problem/airdistances_$problem.csv", ',', Float64)
+    airdist = readdlm("data/$problem/airdistances_$problem.csv", Float64)
 
 # load the driving times between the basic areas(necessary)
 ## 2-dimensional array containing the driving time between all
 ## combinations of basic areas in minutes (Float64)
 ## example: row 3 column 5 corresponds to the driving time
 ##          between basic area 3 and basic area 5 in minutes
-    drivingtime = readdlm("data/$problem/drivingtimes_$problem.csv", ',', Float64)
+    drivingtime = readdlm("data/$problem/drivingtimes_$problem.csv", Float64)
 
 # load the shift pattern for each weekhour (necessary)
 ## array with 168 entrys, each entry corresponds to one weekhour
 ## each shift should be assigned with a number starting from 1
-    shifts = readdlm("data/shifts_8hours.csv", ',', Int64)
+    shifts = readdlm("data/shifts_8hours.csv", Int64)
 
 # load the real capacity plan of the emergency service
 ## array with 168 rows, where each entry corresponds to one weekhour
 ## the number of rows depends on the number of districts (number_districts)
     if real_capacity == true
-        simulation_capacity = readdlm("data/$problem/capacity_$problem.csv", ',', Int64)
+        simulation_capacity = readdlm("data/$problem/capacity_$problem.csv", Int64)
         if size(simulation_capacity,2) != number_districts
             error("Number of districts does not match with the capacity plan!")
         end
+        total_capacity = sum(simulation_capacity)/168
     end
 
 # load the adjacency matrix between the basic areas(if available)
@@ -51,7 +52,7 @@
 ## if no data is available, a matrix is created based on the 
 ## airial distance between the hexagonal BAs
     if isfile("data/$problem/adjacency_$problem.csv")
-        adjacent = readdlm("data/adjacency_$problem.csv", ',', Bool)
+        adjacent = readdlm("data/$problem/adjacency_$problem.csv", Bool)
     else
         adjacent = adjacency_matrix(airdist::Array{Float64,2})
     end
@@ -60,8 +61,8 @@
 # if no array is available, all BAs are potential locations (Int)
 ## binary array with a 1 if a BA represents a potential center, else 0
 ## the first entry in the array corresponds to the hexagon with the id 1
-    if isfile("data/potential_locations_$problem.csv")
-        potential_locations = readdlm("data/potential_locations_$problem.csv", ',', Bool)
+    if isfile("data/$problem/potential_locations_$problem.csv")
+        potential_locations = readdlm("data/$problem/potential_locations_$problem.csv", Bool)
     else
         potential_locations = Vector{Bool}(undef,size(airdist,1)) .= 1
     end
@@ -70,8 +71,12 @@
 # if no array is available, no BA is assumed as current location (Int)
 ## binary array with a 1 if a BA represents a current location, else 0
 ## the first entry in the array corresponds to the hexagon with the id 1
-    if isfile("data/current_departments_$problem.csv")
-        current_locations = readdlm("data/current_departments_$problem.csv", ',', Bool)
+    if isfile("data/$problem/current_departments_$problem.csv")
+        current_locations = Vector{Bool}(undef,size(airdist,1)) .= 0
+        cl = readdlm("data/$problem/current_departments_$problem.csv", Int64)[:,1]
+        for i = 1:length(cl)
+            current_locations[cl[i]] = true
+        end
     else
         current_locations = Vector{Bool}(undef,size(airdist,1)) .= 0
     end
@@ -83,8 +88,8 @@
 ### column 2: standard deviation of q
 ### the first entry corresponds to the data for the first weekhour
 ### the first weekhour starts each monday at 00:00
-    if isfile("data/traffic_flow_$problem.csv")
-        traffic = readdlm("data/traffic_flow_$problem.csv", ',', Float64)
+    if isfile("data/$problem/traffic_flow_$problem.csv")
+        traffic = readdlm("data/$problem/traffic_flow_$problem.csv", Float64)
     else
         traffic = Array{Float64,2}(undef,168,2)
         traffic[:,1] .= 1

@@ -1,23 +1,26 @@
 # prepare the sets N_{ij} and M_{ij} from the article
 # for further details take a look at our article
-function sets_m_n(airdist::Array{Float64,2}, 
-                    hex::Int64)
+function sets_m_n(airdist::Array{Float64,2}, hex::Int64)
     N = Array{Bool,3}(undef,hex,hex,hex) .= 0
     M = Array{Bool,3}(undef,hex,hex,hex) .= 0
-    for i = 1:hex
-        for j = 1:hex
-            maxdist = 0
-            for v = 1:hex
-                if adjacent[j,v] == 1
+    maxdist = Array{Float64,2}(undef,hex,hex) .= 0
+    for j = 1:hex
+        for v = 1:hex
+            if adjacent[j,v] == 1
+                for i = 1:hex
                     if airdist[i,v] < airdist[i,j]
                         N[i,j,v] = 1
                     end
-                    maxdist = max(maxdist,airdist[i,v])
+                    maxdist[i,j] = max(maxdist[i,j], airdist[i,v])
                 end
             end
-            for v = 1:hex
-                if adjacent[j,v] == 1
-                    if airdist[i,v] < maxdist
+        end
+    end
+    for j = 1:hex        
+        for v = 1:hex
+            if adjacent[j,v] == 1
+                for i = 1:hex
+                    if airdist[i,v] < maxdist[i,j]
                         M[i,j,v] = 1
                     end
                 end

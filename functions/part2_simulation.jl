@@ -6,7 +6,8 @@ function part2_simulation!(districts::DataFrame,
                             drivingtime::Array{Float64,2},
                             traffic::Array{Float64,2},
                             nearby_radius::Float64,
-                            drop_incident::Int64)
+                            drop_incident::Int64,
+                            exchange_reserve::Vector{Int64})
 # locations: state the current district ceters
     locations  = Vector{Int64}(vec(sort!(unique(districts[:,:location]))))
 
@@ -129,5 +130,5 @@ function part2_simulation!(districts::DataFrame,
                              mnt::Int64,
                              drop_incident::Int64)
     end
-    return incident_queue
+    return sim_data, ressource_flow
 end

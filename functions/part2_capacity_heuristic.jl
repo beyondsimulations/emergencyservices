@@ -98,5 +98,6 @@
         shifts_out = innerjoin(weekhours, shifts_out,on=:shift)
         shifts_out = sort!(shifts_out, [:weekhour,:shift])
         simulation_capacity = Array{Int64,2}(shifts_out[:,3:end])
+        shifts_out = sort!(stack(shifts_out, 3:size(shifts_out,2)), [:weekhour])
     return simulation_capacity, shifts_out
 end

@@ -33,6 +33,10 @@ data/belgium
 data/belgium_new
 grids/germany
 grids/belgium
-archive
+results_stage1/belgium
+results_stage1/germany
+results_stage2/belgium
+results_stage2/germany
+archive/
 data/archive
-helper
+helper/

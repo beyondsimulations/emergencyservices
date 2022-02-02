@@ -67,3 +67,18 @@ CSV.write("data/$(problem)_new/incidents_$problem.csv", inc_new)
 trfc = CSV.read("data/$problem/traffic_flow_$problem.csv", DataFrame)
 trfc = Matrix(trfc)
 writedlm("data/$(problem)_new/traffic_flow_$problem.csv", trfc)
+
+adj = readdlm("data/germany/adjacency_germany.csv", Bool)
+for i = 1:size(adj,1)
+    adj[i,i] = false
+end
+writedlm("data/germany/adjacency_germany.csv", adj)
+
+current = readdlm("data/germany/current_districts_germany.csv", Int64)[:,1]
+cd = DataFrame(index = Int[], location = Int[])
+for i = 1:length(current)
+    push!(cd, (index = i, location = current[i]))
+end
+CSV.write("results_stage1/germany/district_layout_germany_B0_C0.csv",cd)
+
+current = readdlm("data/germany/capacity_germany.csv", Int64)
