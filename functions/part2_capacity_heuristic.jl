@@ -2,7 +2,7 @@
 # weekhour and district center if no external capacity plan is provided
  function capacity_heuristic(incidents::DataFrame,
                                 sim_data::DataFrame,
-                                total_capacity::Int64,
+                                total_capacity::Float64,
                                 min_capacity::Int64)
     # create a DataFrame with time data
         incidents_time = DataFrame(incidentid   = Int[],

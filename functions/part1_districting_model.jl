@@ -40,7 +40,6 @@ function create_model(::Val{:gurobi},
     set_optimizer_attribute(model, "TimeLimit",       ressourcelimit)
     set_optimizer_attribute(model, "NodeLimit",       nodelimit)
     set_optimizer_attribute(model, "IterationLimit",  iterationlimit)
-    #set_optimizer_attribute(model, "MIPFocus",        1)
     set_optimizer_attribute(model, "Presolve",        0)
     set_optimizer_attribute(model, "Method",          3)
     MOI.set(model, MOI.NumberOfThreads(), maxcores)
