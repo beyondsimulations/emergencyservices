@@ -16,7 +16,7 @@ include("load_packages.jl")
 
 # state the name of the subproblem that should be solved, for example "one_location",
 # "basic", "two_locations", eg.
-    #subproblem  = "G0"::String
+    #subproblem  = "B2"::String
 
 # state the strength of the compactness and contiguity constraints
 # C0 = no contiguity constraints (no compactness)
@@ -24,16 +24,16 @@ include("load_packages.jl")
 # C2 = contiguity and normal ompactness constraints
 # C3 = contiguity and strong compactness constraints
 # For more details take a look at the article this program is based on
-    #compactness = "C0"::String
+    #compactness = "C1"::String
 
     sub = ["G1","G2","G3"]
     comp = ["C0","C1","C2","C3"]
 
 # state the number of simulations that should be executed due to the variability of the driving time
-    sim_number = 32::Int64
+    sim_number = 8::Int64
 
 # state the main input parameters for the optimisation (framework stage 1)
-    number_districts = 24::Int64      # number of districts that should be opened
+    number_districts = 3::Int64      # number of districts that should be opened
     max_drive        = 17.0::Float64  # maximum driving distance (minutes) to district border
     nearby_districts = 0::Int64       # minimal number of districts within nearby radius
     nearby_radius    = 60.0::Float64  # maximal driving time to nearby district center
@@ -58,14 +58,16 @@ include("load_packages.jl")
 # state the main parameters for the simulation (framework stage 2)
     const min_capacity   = 2::Int64      # minimal capacity for each district during each weekhour
     const exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
-    const backlog_max    = 60::Int64     # maximal average backlog (minutes) per car in district for exchange
-    const max_queue      = 75::Int64     # maximal length of the queue of incidents per district and priority
+    const patrol_prio    = 5::Int64      # till which priority can patrol cars be dispatched as backup
+    const patrol_ratio   = 0.3::Float64  # which proportion of the ressources is assigned to be on patrol
+    const backlog_max    = 45::Int64     # maximal average backlog (minutes) per car in district for exchange
+    const max_queue      = 50::Int64     # maximal length of the queue of incidents per district and priority
     const real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
     const drop_incident  = 360::Int64    # total number of minutes after which an incident
                                          # will leave the queue even if it's not fully fulfilled
 
 # state the main parameters for the capacity estimation if no capacity plan is given
-    const total_capacity   = 84.0::Float64    # average capacity per hour in the area over the incident timeframe
+    const total_capacity   = 90.0::Float64    # average capacity per hour in the area over the incident timeframe
     const capacity_service = 0.90::Float64    # alpha service level for weekhour workload estimation
 
 # state how many cars should be reserved for the own district per incident priority
@@ -113,11 +115,14 @@ for subproblem in sub
 for compactness in comp
 
 # state which problem and constraints will be the aim of the framework
-    print("\n Framework will be applied to the problem ",subproblem," with the constraints ", compactness,".")
+    print("\n Framework will be applied to the problem ",subproblem," with the constraint set ", compactness,".")
 
 # district optimisation (framework stage 1)
 if framework != "stage 2"
     print("\n Starting optimisation.")
+
+# Create a Dataframe to save the main results
+    opt_out = DataFrame(prbl = String[], cmpct = String[], objv = Float64[], gp = Float64[], time = Float64[])
 
 # Start the optimisation model
     X, gap, objval, scnds = model_and_optimise(solver, number_districts, drivingtime, we,
@@ -127,8 +132,10 @@ if framework != "stage 2"
     districts =  create_frame(X, size(airdist,1))
     print("\n Duration of the optimisation: ", scnds, " seconds")
 
-    # Save the resulting district layout
+    # Save the optimisation results and district layouts
     CSV.write("results_stage1/$problem/district_layout_$(problem)_$(subproblem)_$(compactness).csv", districts)
+    push!(opt_out, (prbl = problem, cmpct = compactness, objv = objval, gp = gap, time = scnds))
+    CSV.write("results_stage1/$problem/optimisation_$(problem)_$(subproblem)_$(compactness).csv", opt_out)
     print("\n Results from stage 1 written to file.")
 
 # Plot the resulting district layout
@@ -176,11 +183,10 @@ if framework != "stage 1"
     main_results    = DataFrame()
 
 # start the simulation
+    print("\n Starting ", sim_number," emergency service simulations.")
     Threads.@threads for sim_run = 1:sim_number
         rfw = copy(ressource_flow)
         smd = copy(sim_data)
-
-        print("\n Starting simulation run ",sim_run," of ", sim_number," on thread ",Threads.threadid()) 
         scnds = @elapsed smd,rfw = part2_simulation!(districts::DataFrame,
                                                      incidents::DataFrame,
                                                      smd::DataFrame,
@@ -190,8 +196,6 @@ if framework != "stage 1"
                                                      max_drive::Float64,
                                                      drop_incident::Int64,
                                                      exchange_reserve::Vector{Int64})
-        print("\n Simulation ",sim_run," of ", sim_number," completed after ", scnds, " seconds.")
-        
         main_results_local, weekly_location_local, weekly_priority_local, 
         capacity_status_local = evaluate_results(incidents, smd, rfw, simulation_capacity)
 
@@ -207,7 +211,7 @@ if framework != "stage 1"
             append!(capacity_status, capacity_status_local)
             append!(main_results,    main_results_local)
         end
-        
+        print("\n Simulation ",nrow(main_results)," of ", sim_number," completed after ", scnds, " seconds on thread ",Threads.threadid())
     end
 
     # Aggregate the results of all simulations

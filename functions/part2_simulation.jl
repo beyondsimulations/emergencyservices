@@ -14,9 +14,13 @@ function part2_simulation!(districts::DataFrame,
 # location_dictionary: dictionary to match the locations to columns in the simulation
     location_district    = Dict(locations[i] => i for i = 1:length(locations))
 
+# District BAs grouped by department location
+    districts_grouped = groupby(districts, [:location])
+
 # card_priorities: number of priorities in the incident data set
 # card_districts:  number of districts in the district district layout
 # card_incidents:  number of incidents in our simulation
+# list of districts: 
     card_priorities  = maximum(incidents[:,:priority])
     card_districts   = length(locations)
     card_incidents   = nrow(incidents)
@@ -32,6 +36,8 @@ function part2_simulation!(districts::DataFrame,
     queue_used      = Array{Int64,2}(undef,card_districts,card_priorities) .= 1
     queue_change    = Array{Bool,2}(undef,card_districts,card_priorities) .= false
     candidates      = Vector{Union{Missing,Float64}}(missing, card_districts)
+    patrol_location = Matrix{Int64}(undef,max_queue,card_districts) .= 0
+    patrol_time     = Vector{Float64}(undef, size(patrol_location,1)) .= 0
     cin             = 1
 
 # sim_start:  epoch (in minutes) of the first incident
@@ -59,9 +65,12 @@ function part2_simulation!(districts::DataFrame,
                      card_priorities::Int64,
                      card_districts::Int64,
                      max_queue::Int64)
+        # determine the location of all cars currently on patrol
+        determine_patrol_location!(patrol_location,ressource_flow,locations,districts_grouped,mnt)
+
         # start the allocation of ressources to incidents in the own district
         for p = 1:card_priorities
-            own_district = 1
+            dispatch = "own_department"
             for k = 1:2
                 for i = 1:card_districts
                     for j = 1:max_queue
@@ -72,8 +81,9 @@ function part2_simulation!(districts::DataFrame,
                             # and the average car has a backlog below the threshold "backlog_max"
                             # and the incident has at least one missing car
                             if ressource_flow[mnt,i,1] > 0 || (ressource_flow[mnt,i,5] > 0 &&
-                               ressource_flow[mnt,i,6] < backlog_max * sum(ressource_flow[mnt,i,1:5])) &&
+                               ressource_flow[mnt,i,7] < backlog_max * sum(ressource_flow[mnt,i,1:6])) &&
                                sim_data[current_incident,:cars_missing] > 0
+                               fastest_time = 0
                                incident_dispatch!(sim_data::DataFrame,
                                                    incidents::DataFrame,
                                                    ressource_flow::Array{Int64,3},
@@ -84,7 +94,8 @@ function part2_simulation!(districts::DataFrame,
                                                    mnt::Int64,
                                                    i::Int64,
                                                    k::Int64,
-                                                   own_district::Int64)
+                                                   dispatch::String,
+                                                   fastest_time::Int64)
                             end
                         else
                             break
@@ -92,10 +103,51 @@ function part2_simulation!(districts::DataFrame,
                     end
                 end
             end
+            # check whether cars on patrol within the own district can serve as backup
+            #######
+            dispatch = "own_patrol"
+            k = 1
+            for i = 1:card_districts
+                for j = 1:max_queue
+                    if ismissing(incident_queue[j,i,p]) == false && ressource_flow[mnt,i,6] > 0
+                        current_incident = incident_queue[j,i,p]
+                        # if the district has cars currently patroling the own district
+                        # and there hasn't been a car dispatched to the incident and the
+                        # priority is high enough to warrant a dispatch
+                        if ressource_flow[mnt,i,6] > 0 && sim_data[current_incident,:cars_missing] > 0 && incidents[current_incident,:priority] <= patrol_prio
+                            fastest_time = determine_patrol_driving_time(i::Int64,
+                                                                            incidents::DataFrame,
+                                                                            traffic::Array{Float64,2},
+                                                                            patrol_location::Matrix{Int64}, 
+                                                                            patrol_time::Vector{Float64}, 
+                                                                            drivingtime::Array{Float64,2},
+                                                                            current_incident::Int64,
+                                                                            max_drive::Float64,
+                                                                            mnt::Int64)
+                            if fastest_time < max_drive
+                                incident_dispatch!(sim_data::DataFrame,
+                                                    incidents::DataFrame,
+                                                    ressource_flow::Array{Int64,3},
+                                                    drivingtime::Array{Float64,2},
+                                                    traffic::Array{Float64,2},
+                                                    locations::Vector{Int64},
+                                                    current_incident::Int64,
+                                                    mnt::Int64,
+                                                    i::Int64,
+                                                    k::Int64,
+                                                    dispatch::String,
+                                                    fastest_time::Int64)
+                            end
+                        end
+                    else
+                        break
+                    end
+                end
+            end
             # start the exchange of cars to foreign districts to fulfill all incidents
             # faster if an incident happens is within a predefined perimeter. The
             # exchange queue is fulfilled stepwise starting with the hightes priority
-            own_district = 0
+            dispatch = "exchange_department"
             if p <= exchange_prio
                 # fill the exchange queue with all unfullfilled incidents
                 fill_exchange_queue!(sim_data::DataFrame,
@@ -115,7 +167,7 @@ function part2_simulation!(districts::DataFrame,
                                         exchange_reserve::Vector{Int64},
                                         card_districts::Int64,
                                         mnt::Int64,
-                                        own_district::Int64,
+                                        dispatch::String,
                                         nearby_radius::Float64,
                                         p::Int64)
             end

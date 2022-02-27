@@ -6,12 +6,12 @@ function evaluate_results(incidents::DataFrame,
     incd = innerjoin(incidents, sim_data, on=:incidentid)
     for i = 1:nrow(incd)
         if ismissing(incd[i,:dispatch_minute_first])
-            incd[i,:dispatch_minute_first] = incd[i,:incident_minute] + drop_incident
-            incd[i,:arrival_minute_first]  = incd[i,:dispatch_minute_first] + max_drive
+            incd[i,:dispatch_minute_first] = ceil(incd[i,:incident_minute] + drop_incident)
+            incd[i,:arrival_minute_first]  = ceil(incd[i,:dispatch_minute_first] + max_drive)
         end
         if ismissing(incd[i,:dispatch_minute_all])
-            incd[i,:dispatch_minute_all] = incd[i,:incident_minute] + drop_incident
-            incd[i,:arrival_minute_all]  = incd[i,:dispatch_minute_all] + max_drive
+            incd[i,:dispatch_minute_all] = ceil(incd[i,:incident_minute] + drop_incident)
+            incd[i,:arrival_minute_all]  = ceil(incd[i,:dispatch_minute_all] + max_drive)
         end
     end
     incd[:,:response_time_first]   = incd[:,:arrival_minute_first] - incd[:,:incident_minute]

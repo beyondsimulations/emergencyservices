@@ -7,72 +7,91 @@ function incident_dispatch!(sim_data::DataFrame,
                             locations::Vector{Int64},
                             current_case::Int64,
                             now::Int64,
-                            i::Int64,
+                            district::Int64,
                             k::Int64,
-                            own_district::Int64)
+                            dispatch::String,
+                            fastest_time::Int64)
 #  create the neccessary variables
     inc::Int64           = incidents[current_case,:location] # incident_location
-    dc::Int64            = locations[i]                      # location district center
-    arrival_inc::Int64   = 0                # minute of arrival at incident
-    departure_inc::Int64 = 0                # minute of departure at incident
-    arrival_dc::Int64    = 0                # minute of arrival at district center
+    dc::Int64            = locations[district]               # location district center
+
+    # create a vector with all necessary timestamps
+    # timestamps[1]: minute of arrival at incident
+    # timestamps[2]: minute of departure at incident
+    # timestamps[3]: minute of arrival at district center
+    timestamps = Vector{Int64}(undef,3)
 
 # calculate the minute the car will arrive at the incident location
-    arrival_inc = now + dispatch_drivingtime(drivingtime[dc,inc],traffic,now)
+    if fastest_time == 0
+        timestamps[1] = now + dispatch_drivingtime(drivingtime[dc,inc],traffic,now)
+    else
+        timestamps[1] = now + fastest_time
+    end
 
 # calculate the minute of arrival at the incident and the minute of departure from the incident
     if sim_data[current_case,:cars_dispatched] == 0
-        departure_inc = arrival_inc + incidents[current_case,:length]
-        arrival_dc = departure_inc + dispatch_drivingtime(drivingtime[inc,dc],traffic,departure_inc)
-        ressource_flow[arrival_dc,i,6] += incidents[current_case,:backlog]
+        timestamps[2] = timestamps[1] + incidents[current_case,:length]
+        timestamps[3] = timestamps[2] + dispatch_drivingtime(drivingtime[inc,dc],traffic,timestamps[2])
+        ressource_flow[timestamps[3],district,7] += incidents[current_case,:backlog]
     else
-        departure_inc = min(arrival_inc + incidents[current_case,:length], arrival_inc + 
+        timestamps[2] = min(timestamps[1] + incidents[current_case,:length], timestamps[1] + 
                         incidents[current_case,:length] - sim_data[current_case,:dispatch_minute_first] + now)
-        arrival_dc = departure_inc + dispatch_drivingtime(drivingtime[inc,dc],traffic,departure_inc)                 
+        timestamps[3] = timestamps[2] + dispatch_drivingtime(drivingtime[inc,dc],traffic,timestamps[2])                 
     end
 
 # calculate the number of cars to dispatch to the incident
-# k = 1: only one car will be dispatched
-# k = 2: the number of dispatched cars dependends on the availability
-    cars_backlog::Int64 = 0  # number of cars dispatched from location currently working on backlog
-    cars_free::Int64    = 0  # number of cars dispatched from location currently free
-    if ressource_flow[now,i,1] > 0
-        if k == 1
-            cars_free = 1
+    # cars[1]:  number of cars dispatched from location currently free
+    # cars[2]:  number of cars dispatched from location currently working on backlog
+    # cars[3]:  number of cars dispatched currently on patrol
+    cars = Vector{Int64}(undef,3) .= 0
+
+    # k = 1: only one car will be dispatched
+    # k = 2: the number of dispatched cars dependends on the availability
+    if dispatch == "own_department"
+        if ressource_flow[now,district,1] > 0
+            if k == 1
+                cars[1] = 1
+            else
+                cars[1] = min(sim_data[current_case,:cars_missing], ressource_flow[now,district,1])
+            end
         else
-            cars_free = min(sim_data[current_case,:cars_missing], ressource_flow[now,i,1])
+            cars[2] = 1
         end
-        cars_backlog = 0
-    else
-        cars_free = 0
-        cars_backlog = 1
+    elseif dispatch == "own_patrol"
+        cars[3] = 1
+    elseif dispatch == "exchange_department"
+        cars[1] = 1
     end
 
+    # calculate the numer of dispatched cars
+    total = sum(cars) 
+
     # assign the calculated capacities into the ressource flow matrix
-    ressource_flow[now,i,1]             -= cars_free
-    ressource_flow[now,i,5]             -= cars_backlog
-    ressource_flow[now,i,2]             += cars_free + cars_backlog
-    ressource_flow[arrival_inc,i,2]     -= cars_free + cars_backlog
-    ressource_flow[arrival_inc,i,3]     += cars_free + cars_backlog
-    ressource_flow[departure_inc,i,3]   -= cars_free + cars_backlog
-    ressource_flow[departure_inc,i,4]   += cars_free + cars_backlog
-    ressource_flow[arrival_dc,i,4]      -= cars_free + cars_backlog
-    ressource_flow[arrival_dc,i,1]      += cars_free + cars_backlog
+    ressource_flow[now,district,1]             -= cars[1]
+    ressource_flow[now,district,5]             -= cars[2]
+    ressource_flow[now,district,6]             -= cars[3]
+    ressource_flow[now,district,2]             += total
+    ressource_flow[timestamps[1],district,2]   -= total
+    ressource_flow[timestamps[1],district,3]   += total
+    ressource_flow[timestamps[2],district,3]   -= total
+    ressource_flow[timestamps[2],district,4]   += total
+    ressource_flow[timestamps[3],district,4]   -= total
+    ressource_flow[timestamps[3],district,1]   += total
 
     # write the resulting times to the sim_data DataFrame
     if sim_data[current_case,:cars_dispatched] == 0
-        sim_data[current_case,:location_dispatched_first] = locations[i]
+        sim_data[current_case,:location_dispatched_first] = locations[district]
         sim_data[current_case,:dispatch_minute_first]     = now
-        sim_data[current_case,:arrival_minute_first]      = arrival_inc
+        sim_data[current_case,:arrival_minute_first]      = timestamps[1]
     end
-    sim_data[current_case,:arrival_minute_first]    = min(sim_data[current_case,:arrival_minute_first],arrival_inc)
-    sim_data[current_case,:cars_dispatched]         += cars_free + cars_backlog
-    sim_data[current_case,:cars_missing]            -= cars_free + cars_backlog
+    sim_data[current_case,:arrival_minute_first]    = min(sim_data[current_case,:arrival_minute_first],timestamps[1])
+    sim_data[current_case,:cars_dispatched]         += total
+    sim_data[current_case,:cars_missing]            -= total
     if sim_data[current_case,:cars_missing] == 0
         sim_data[current_case,:dispatch_minute_all] = now
-        sim_data[current_case,:arrival_minute_all]  = arrival_inc
+        sim_data[current_case,:arrival_minute_all]  = timestamps[1]
     end
-    if  own_district == 1
-        sim_data[current_case,:cars_location_responsible] += cars_free + cars_backlog
+    if  dispatch == "own_department" || dispatch == "own_patrol"
+        sim_data[current_case,:cars_location_responsible] += total
     end
 end

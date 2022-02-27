@@ -11,15 +11,22 @@ function prepare_next_minute!(sim_data::DataFrame,
     # if a location has unused ressources and a backlog, the ressources are assigned
     # to work on the backlog as long as there is a backlog left
     for i = 1:size(ressource_flow,2)
-        if ressource_flow[mnt,i,1] > 0 && ressource_flow[mnt,i,6] > 0
-            ressource_flow[mnt,i,5] += min(ressource_flow[mnt,i,1],ressource_flow[mnt,i,6])
-            ressource_flow[mnt,i,1] -= min(ressource_flow[mnt,i,1],ressource_flow[mnt,i,6])
+        if ressource_flow[mnt,i,1] > 0 && ressource_flow[mnt,i,7] > 0
+            ressource_flow[mnt,i,5] += min(ressource_flow[mnt,i,1],ressource_flow[mnt,i,7])
+            ressource_flow[mnt,i,1] -= min(ressource_flow[mnt,i,1],ressource_flow[mnt,i,7])
         end
-        if ressource_flow[mnt,i,6] > 0
-            ressource_flow[mnt,i,6] = max(ressource_flow[mnt,i,6] - ressource_flow[mnt,i,5], 0)
+        if ressource_flow[mnt,i,7] > 0
+            ressource_flow[mnt,i,7] = max(ressource_flow[mnt,i,7] - ressource_flow[mnt,i,5], 0)
         else
             ressource_flow[mnt,i,1] += ressource_flow[mnt,i,5]
             ressource_flow[mnt,i,5]  = 0
+        end
+        if ressource_flow[mnt,i,6] / sum(ressource_flow[mnt,i,1:6]) < patrol_ratio && ressource_flow[mnt,i,1] > 0
+            ressource_flow[mnt,i,6] += 1
+            ressource_flow[mnt,i,1] -= 1
+        elseif (ressource_flow[mnt,i,6] + 1) / sum(ressource_flow[mnt,i,1:6]) > patrol_ratio && ressource_flow[mnt,i,6] > 0
+            ressource_flow[mnt,i,6] -= 1
+            ressource_flow[mnt,i,1] += 1
         end
     end
     # drop all fulfilled incidents and the incidents that pass the "drop_incident" threshold from

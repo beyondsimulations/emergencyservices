@@ -10,7 +10,7 @@ function fulfill_exchange_queue!(incidents::DataFrame,
                                  exchange_reserve::Vector{Int64},
                                  card_districts::Int64,
                                  mnt::Int64,
-                                 own_district::Int64,
+                                 dispatch::String,
                                  max_drive::Float64,
                                  p::Int64)
     for j = 1:length(exchange_queue)
@@ -25,23 +25,21 @@ function fulfill_exchange_queue!(incidents::DataFrame,
             # traffic flow
             @simd for i = 1:card_districts
                 if ressource_flow[mnt,i,1] > exchange_reserve[p] &&
-                    drivingtime[locations[i],incidents[current_case,:location]] <=
-                    max_drive
-                    drive = dispatch_drivingtime(drivingtime[locations[i],
-                                                    incidents[current_case,:location]],
-                                                    traffic,mnt)
+                    drivingtime[locations[i],incidents[current_case,:location]] <= max_drive
+                    drive = dispatch_drivingtime(drivingtime[locations[i], incidents[current_case,:location]], traffic, mnt)
                     # save the location as exchange candidate and weight it by 
                     # the current number of cars available for dispatch
                     if drive < max_drive
-                        candidates[i] = -(ressource_flow[mnt,i,1]/drive)
+                        candidates[i] = ressource_flow[mnt,i,1]/drive
                         candidate = true
                     end
                 end
             end
             # determine the best candidate from the candidate list (if available)
             if candidate == true
-                i = findmax(skipmissing(candidates))[2]
+                i = findmin(skipmissing(candidates))[2]
                 k = 1
+                fastest_time = 0
                 # dispatch one car from the exchange location
                 incident_dispatch!(sim_data::DataFrame,
                                    incidents::DataFrame,
@@ -53,7 +51,8 @@ function fulfill_exchange_queue!(incidents::DataFrame,
                                    mnt::Int64,
                                    i::Int64,
                                    k::Int64,
-                                   own_district::Int64)
+                                   dispatch::String,
+                                   fastest_time::Int64)
             end
         else
             break

@@ -25,6 +25,7 @@
     include("functions/part2_ressource_flow_matrix.jl")
     include("functions/part2_fill_queues.jl")
     include("functions/part2_incident_dispatch.jl")
+    include("functions/part2_determine_patrol_location.jl")
     include("functions/part2_fill_exchange_queue.jl")
     include("functions/part2_fulfill_exchange_queue.jl")
     include("functions/part2_prepare_next_minute.jl")

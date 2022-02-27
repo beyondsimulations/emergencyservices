@@ -15,9 +15,10 @@ function ressource_flow_matrix(sim_data::DataFrame,
 ### ressource_flow[:,:,3] = capcacity at incident
 ### ressource_flow[:,:,4] = capcacity driving back to district center
 ### ressource_flow[:,:,5] = capcacity at paperwork
-### ressource_flow[:,:,5] = minutes of paperwork in the corresponding district
+### ressource_flow[:,:,6] = capcacity at patrol
+### ressource_flow[:,:,7] = minutes of paperwork in the corresponding district
     ressource_flow = Array{Int64,3}(undef,sim_length - sim_start + 1000,
-                                    size(simulation_capacity,2), 6) .= 0
+                                    size(simulation_capacity,2), 7) .= 0
     current_weekhour = incidents[1,:weekhour]
     current_minute   = minute(unix2datetime(incidents[1,:epoch]))
     ressource_flow[1,:,1] = simulation_capacity[current_weekhour,:]

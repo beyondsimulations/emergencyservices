@@ -10,6 +10,7 @@ function ressource_status(ressource_flow::Array{Int64,3},
                                         :at_incident,
                                         :to_location,
                                         :at_backlog,
+                                        :at_patrol,
                                         :backlog_minutes])
     # append the weekhour to the ressource flow DataFrame
     current_weekhour = incidents[1,:weekhour]
@@ -34,6 +35,7 @@ function ressource_status(ressource_flow::Array{Int64,3},
                         :at_incident => mean => :at_incident,
                         :to_location => mean => :to_location,
                         :at_backlog  => mean => :at_backlog,
+                        :at_patrol   => mean => :at_patrol,
                         :backlog_minutes => mean => :backlog_minutes)
     capacity_status = sort!(capacity_status, :weekhour)
 
@@ -42,7 +44,7 @@ function ressource_status(ressource_flow::Array{Int64,3},
     backlog_status =  select!(copy(capacity_status), [:weekhour,:backlog_minutes])
     capacity_status = select!(capacity_status, Not([:backlog_minutes]))
     main_capacity_status = combine(capacity_status, [n => mean => n for n in names(capacity_status)])
-    capacity_status = sort!(stack(capacity_status, 2:6), [:weekhour])
+    capacity_status = sort!(stack(capacity_status, 2:7), [:weekhour])
     
     return capacity_status, main_capacity_status
 end
