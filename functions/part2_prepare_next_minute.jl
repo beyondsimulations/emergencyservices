@@ -21,7 +21,7 @@ function prepare_next_minute!(sim_data::DataFrame,
             ressource_flow[mnt,i,1] += ressource_flow[mnt,i,5]
             ressource_flow[mnt,i,5]  = 0
         end
-        if ressource_flow[mnt,i,6] / sum(ressource_flow[mnt,i,1:6]) < patrol_ratio && ressource_flow[mnt,i,1] > 0
+        if ressource_flow[mnt,i,6] / sum(ressource_flow[mnt,i,1:6]) < patrol_ratio && ressource_flow[mnt,i,1] > 1
             ressource_flow[mnt,i,6] += 1
             ressource_flow[mnt,i,1] -= 1
         elseif (ressource_flow[mnt,i,6] + 1) / sum(ressource_flow[mnt,i,1:6]) > patrol_ratio && ressource_flow[mnt,i,6] > 0

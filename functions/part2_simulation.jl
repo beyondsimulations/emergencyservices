@@ -12,7 +12,7 @@ function part2_simulation!(districts::DataFrame,
     locations  = Vector{Int64}(vec(sort!(unique(districts[:,:location]))))
 
 # location_dictionary: dictionary to match the locations to columns in the simulation
-    location_district    = Dict(locations[i] => i for i = 1:length(locations))
+    location_district = Dict(locations[i] => i for i = 1:length(locations))
 
 # District BAs grouped by department location
     districts_grouped = groupby(districts, [:location])
@@ -31,14 +31,15 @@ function part2_simulation!(districts::DataFrame,
 #  queue_change:   states whether a queue has changed to save unnecessary sorting
 #  candidates:     lists all possible candidates and their fit for an exchange
 #  cin:            counts the current incident row in our DataFrames
-    incident_queue  = Array{Union{Missing,Int},3}(missing,max_queue,card_districts,card_priorities)
-    exchange_queue  = Array{Union{Missing,Int64},1}(missing,max_queue*card_districts)
-    queue_used      = Array{Int64,2}(undef,card_districts,card_priorities) .= 1
-    queue_change    = Array{Bool,2}(undef,card_districts,card_priorities) .= false
-    candidates      = Vector{Union{Missing,Float64}}(missing, card_districts)
-    patrol_location = Matrix{Int64}(undef,max_queue,card_districts) .= 0
-    patrol_time     = Vector{Float64}(undef, size(patrol_location,1)) .= 0
-    cin             = 1
+    incident_queue   = Array{Union{Missing,Int},3}(missing,max_queue,card_districts,card_priorities)
+    exchange_queue   = Array{Union{Missing,Int64},1}(missing,max_queue*card_districts)
+    queue_used       = Array{Int64,2}(undef,card_districts,card_priorities) .= 1
+    queue_change     = Array{Bool,2}(undef,card_districts,card_priorities) .= false
+    candidates       = Vector{Union{Missing,Float64}}(missing, card_districts)
+    patrol_location  = Matrix{Int64}(undef,max_queue,card_districts) .= 0
+    patrol_area_time = Matrix{Int64}(undef, size(patrol_location,1), card_districts) .= 0
+    patrol_drive     = Vector{Float64}(undef, size(patrol_location,1)) .= 0
+    cin              = 1
 
 # sim_start:  epoch (in minutes) of the first incident
 # sim_length: epoch (in minutes) ends 5 minutes after the incident_minute
@@ -66,7 +67,7 @@ function part2_simulation!(districts::DataFrame,
                      card_districts::Int64,
                      max_queue::Int64)
         # determine the location of all cars currently on patrol
-        determine_patrol_location!(patrol_location,ressource_flow,locations,districts_grouped,mnt)
+        determine_patrol_location!(patrol_location,patrol_area_time,drivingtime,ressource_flow,locations,districts_grouped,mnt)
 
         # start the allocation of ressources to incidents in the own district
         for p = 1:card_priorities
@@ -114,17 +115,19 @@ function part2_simulation!(districts::DataFrame,
                         # if the district has cars currently patroling the own district
                         # and there hasn't been a car dispatched to the incident and the
                         # priority is high enough to warrant a dispatch
-                        if ressource_flow[mnt,i,6] > 0 && sim_data[current_incident,:cars_missing] > 0 && incidents[current_incident,:priority] <= patrol_prio
+                        if ressource_flow[mnt,i,6] > 0 && 
+                            sim_data[current_incident,:cars_dispatched] == 0 && 
+                            incidents[current_incident,:priority] <= patrol_prio
                             fastest_time = determine_patrol_driving_time(i::Int64,
                                                                             incidents::DataFrame,
                                                                             traffic::Array{Float64,2},
                                                                             patrol_location::Matrix{Int64}, 
-                                                                            patrol_time::Vector{Float64}, 
+                                                                            patrol_drive::Vector{Float64}, 
                                                                             drivingtime::Array{Float64,2},
                                                                             current_incident::Int64,
                                                                             max_drive::Float64,
                                                                             mnt::Int64)
-                            if fastest_time < max_drive
+                            if fastest_time < patrol_time
                                 incident_dispatch!(sim_data::DataFrame,
                                                     incidents::DataFrame,
                                                     ressource_flow::Array{Int64,3},

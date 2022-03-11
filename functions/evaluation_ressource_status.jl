@@ -41,7 +41,6 @@ function ressource_status(ressource_flow::Array{Int64,3},
 
     # create an additional DataFrame to hold the average backlog for
     # each weekhour over all locations
-    backlog_status =  select!(copy(capacity_status), [:weekhour,:backlog_minutes])
     capacity_status = select!(capacity_status, Not([:backlog_minutes]))
     main_capacity_status = combine(capacity_status, [n => mean => n for n in names(capacity_status)])
     capacity_status = sort!(stack(capacity_status, 2:7), [:weekhour])

@@ -16,7 +16,7 @@ include("load_packages.jl")
 
 # state the name of the subproblem that should be solved, for example "one_location",
 # "basic", "two_locations", eg.
-    #subproblem  = "B2"::String
+    #subproblem  = "G0"::String
 
 # state the strength of the compactness and contiguity constraints
 # C0 = no contiguity constraints (no compactness)
@@ -24,16 +24,16 @@ include("load_packages.jl")
 # C2 = contiguity and normal ompactness constraints
 # C3 = contiguity and strong compactness constraints
 # For more details take a look at the article this program is based on
-    #compactness = "C1"::String
+    #compactness = "C0"::String
 
     sub = ["G1","G2","G3"]
     comp = ["C0","C1","C2","C3"]
 
 # state the number of simulations that should be executed due to the variability of the driving time
-    sim_number = 8::Int64
+    sim_number = 20::Int64
 
 # state the main input parameters for the optimisation (framework stage 1)
-    number_districts = 3::Int64      # number of districts that should be opened
+    number_districts = 3::Int64       # number of districts that should be opened
     max_drive        = 17.0::Float64  # maximum driving distance (minutes) to district border
     nearby_districts = 0::Int64       # minimal number of districts within nearby radius
     nearby_radius    = 60.0::Float64  # maximal driving time to nearby district center
@@ -53,27 +53,29 @@ include("load_packages.jl")
 # state the weight of each priority for the driving time
 # important: the weight has to equal the number of priorities
 # in the incident data stage
-    prio_weight = [1, 1, 1, 1, 1]
+    prio_weight = [0, 0, 0, 0, 0]
 
 # state the main parameters for the simulation (framework stage 2)
-    const min_capacity   = 2::Int64      # minimal capacity for each district during each weekhour
-    const exchange_prio  = 5::Int64      # till which priority can cars be exchanged to foreign districts
-    const patrol_prio    = 5::Int64      # till which priority can patrol cars be dispatched as backup
-    const patrol_ratio   = 0.3::Float64  # which proportion of the ressources is assigned to be on patrol
-    const backlog_max    = 45::Int64     # maximal average backlog (minutes) per car in district for exchange
-    const max_queue      = 50::Int64     # maximal length of the queue of incidents per district and priority
-    const real_capacity  = false::Bool   # state whether a predefined capacity plan should be loaded
-    const drop_incident  = 360::Int64    # total number of minutes after which an incident
-                                         # will leave the queue even if it's not fully fulfilled
+    const min_capacity   = 2::Int64        # minimal capacity for each district during each weekhour
+    const exchange_prio  = 5::Int64        # till which priority can cars be exchanged to foreign districts
+    const patrol_prio    = 5::Int64        # till which priority can patrol cars be dispatched as backup
+    const patrol_ratio   = 0.50::Float64   # which proportion of the ressources is assigned to be on patrol
+    const patrol_time    = 8.00::Float64   # maximal driving time for a patrol car dispatch as help
+    const patrol_area    = 5::Int64       # time spent patrolling per basic area
+    const backlog_max    = 60::Int64       # maximal average backlog (minutes) per car in district for exchange
+    const max_queue      = 50::Int64       # maximal length of the queue of incidents per district and priority
+    const real_capacity  = false::Bool     # state whether a predefined capacity plan should be loaded
+    const drop_incident  = 360::Int64      # total number of minutes after which an incident
+                                           # will leave the queue even if it's not fully fulfilled
 
 # state the main parameters for the capacity estimation if no capacity plan is given
-    const total_capacity   = 90.0::Float64    # average capacity per hour in the area over the incident timeframe
+    const total_capacity   = 85.0::Float64    # average capacity per hour in the area over the incident timeframe
     const capacity_service = 0.90::Float64    # alpha service level for weekhour workload estimation
 
 # state how many cars should be reserved for the own district per incident priority
 # during exchanges to other districts this threshold will not be crossed 
 # important: the exchange_reserve has to equal the number of priorities
-    exchange_reserve = [0,0,0,0,0]
+    exchange_reserve = [1,1,1,1,1]
 
 # state whether to save the plotted results
     const save_plots = true::Bool # save the plots
