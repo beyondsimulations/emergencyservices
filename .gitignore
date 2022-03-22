@@ -23,20 +23,14 @@ docs/site/
 # environment.
 Manifest.toml
 
-# PDF Files with the resulting graphs
-*.pdf
-
 # data from the anonymous cases studies
 data/germany
-data/germany_new
 data/belgium
-data/belgium_new
+graphs/germany
+graphs/belgium
 grids/germany
 grids/belgium
 results_stage1/belgium
 results_stage1/germany
 results_stage2/belgium
 results_stage2/germany
-archive/
-data/archive
-helper/

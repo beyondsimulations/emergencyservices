@@ -2,7 +2,7 @@ import Pkg
 Pkg.activate("emergency_services")
 
 # load all necessary packages and functions
-include("load_packages.jl")
+include("functions/start_load_packages.jl")
 
 # state the parts of the framework that should be executed
 # stage 1: only the optimisation will be executed
@@ -12,11 +12,11 @@ include("load_packages.jl")
 
 # state the name of the problem instance that should be solved, possible examples
 # are "0510","1008","1508","2040" where the name corresponds to the number of BAs
-    problem     = "1508"::String
+    problem     = "2040"::String
 
 # state the name of the subproblem that should be solved, for example "one_location",
 # "basic", "two_locations", eg.
-    subproblem  = "nine_locations"::String
+    subproblem  = "twelve_locations"::String
 
 # state the strength of the compactness and contiguity constraints
 # C0 = no contiguity constraints (no compactness)
