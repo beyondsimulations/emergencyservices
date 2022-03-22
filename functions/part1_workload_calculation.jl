@@ -3,7 +3,7 @@ function workload_calculation(incidents::DataFrame,
                                 prio_weight::Vector{Int64},
                                 drivingtime::Array{Float64,2},
                                 traffic::Array{Float64,2},
-                                hex::Int64)
+                                BAs::Int64)
     workload = copy(drivingtime) 
     local_incidents = copy(incidents)
     local_incidents[:,:priority_weight] .= 0
@@ -14,12 +14,12 @@ function workload_calculation(incidents::DataFrame,
     workload_group = combine(workload_group, nrow => :incidents, :cars => mean => :cars)
     cases_location = groupby(local_incidents,[:location])
     cases_location = combine(cases_location, nrow => :incidents)
-    incidents_location = Vector{Float64}(undef,hex) .= 0
+    incidents_location = Vector{Float64}(undef,BAs) .= 0
     for x = 1:nrow(cases_location)
         incidents_location[cases_location[x,:location]] = cases_location[x,:incidents]
     end
     for x = 1:nrow(workload_group)
-        for i = 1:hex
+        for i = 1:BAs
             workload[i,workload_group[x,:location]] += drivingtime[i,workload_group[x,:location]] * 2 * 
                                                         traffic[workload_group[x,:weekhour],1] * 
                                                         workload_group[x,:cars] * 

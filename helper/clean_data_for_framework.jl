@@ -4,8 +4,43 @@ using Dates
 using DelimitedFiles
 using Shapefile
 
-problem = "belgium"
+problem = "0510"
 ad = CSV.read("data/$problem/airdistances_$problem.csv", DataFrame)
+ad = ad[1:end,2:end]
+ad = round.(Matrix(ad),digits=2)
+writedlm("data/$(problem)_new/airdistances_$problem.csv", ad)
+
+ad = CSV.read("data/$problem.csv", DataFrame)
+drive = Matrix{Float64}(undef,maximum(ad.origin_id),maximum(ad.origin_id)) .= 0
+for i = 1:nrow(ad)
+    if ismissing(ad[i,:network_cost])
+        if ad[i,:origin_id] == ad[i,:destination_id]
+            drive[ad[i,:origin_id],ad[i,:destination_id]] = 0.5
+        else
+            drive[ad[i,:origin_id],ad[i,:destination_id]] = 0.0
+        end
+    else
+        drive[ad[i,:origin_id],ad[i,:destination_id]] = ad[i,:network_cost]/100
+    end
+end
+for i = 1:maximum(ad.origin_id)
+    for j = 1:maximum(ad.origin_id)
+        if drive[i,j] == 0.0
+            if i > 1
+                if i < maximum(ad.origin_id)
+                    drive[i,j] = (drive[i-1,j] + drive[i+1,j])/2+rand()
+                else
+                    drive[i,j] = (drive[i-2,j] + drive[i-1,j])/2+rand()
+                end
+            else
+                drive[i,j] = (drive[i+2,j] + drive[i+1,j])/2+rand()
+            end
+        end
+    end
+end
+drive = round.(drive, digits = 2)
+writedlm("data/$problem/drivingtimes_$problem.csv", drive)
+
 ad = ad[1:end,2:end]
 ad = round.(Matrix(ad),digits=2)
 writedlm("data/$(problem)_new/airdistances_$problem.csv", ad)
