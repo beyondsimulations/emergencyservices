@@ -36,6 +36,7 @@ function evaluate_results(incidents::DataFrame,
     weekly_location = sort!(weekly_location, [:weekhour, :location_responsible])
     weekly_location[!,:exchange_ratio] = 1 .- weekly_location[!,:cars_location_responsible] ./ 
                                                 weekly_location[!,:dispatched_cars]
+    weekly_location.location_responsible = convert.(Int64, weekly_location.location_responsible)
 
 # 2. group the results according to the priority and weekhour
     weekly_priority = groupby(select!(copy(incd), Not([:location_dispatched_first])), [:weekhour, :priority])
@@ -53,6 +54,8 @@ function evaluate_results(incidents::DataFrame,
     weekly_priority = sort!(weekly_priority, [:weekhour, :priority])
     weekly_priority[!,:exchange_ratio] = 1 .- weekly_priority[!,:cars_location_responsible] ./ 
                                                 weekly_priority[!,:dispatched_cars]
+    weekly_priority[:,:priority] = Int.(weekly_priority[:,:priority])
+    weekly_priority.priority = convert.(Int64, weekly_priority.priority)
 
 # 3. group the results for a single output row
     main_results = combine(select!(copy(incd), Not([:location_dispatched_first])),

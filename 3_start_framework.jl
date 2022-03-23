@@ -16,7 +16,7 @@ include("functions/start_load_packages.jl")
 
 # state the name of the subproblem that should be solved, for example "one_location",
 # "basic", "two_locations", eg.
-    subproblem  = "twelve_locations"::String
+    subproblem  = "nine_locations"::String
 
 # state the strength of the compactness and contiguity constraints
 # C0 = no contiguity constraints (no compactness)
@@ -24,13 +24,13 @@ include("functions/start_load_packages.jl")
 # C2 = contiguity and normal ompactness constraints
 # C3 = contiguity and strong compactness constraints
 # For more details take a look at the article this program is based on
-    compactness = "C0"::String
+    compactness = "C2"::String
 
 # state the number of simulations that should be executed due to the variability of the driving time
     sim_number = 100::Int64
 
 # state the main input parameters for the optimisation (framework stage 1)
-    number_districts = 12::Int64       # number of districts that should be opened
+    number_districts = 9::Int64       # number of districts that should be opened
     max_drive        = 30.0::Float64  # maximum driving distance (minutes) to district border
     nearby_districts = 2::Int64       # minimal number of districts within nearby radius
     nearby_radius    = 30.0::Float64  # maximal driving time to nearby district center

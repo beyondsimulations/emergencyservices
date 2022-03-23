@@ -13,15 +13,6 @@ function determine_patrol_location!(patrol_location::Matrix{Int64},
                 patrol_location[patrolcar, department] = districts_grouped[(locations[department],)][location,:index]
                 patrol_area_time[patrolcar, department] = 0
             elseif  patrol_area_time[patrolcar, department] > patrol_area
-                #time_to_location = Matrix{Int64}(undef,nrow(districts_grouped[(locations[department],)]),2)
-                #for potential_locations = 1:nrow(districts_grouped[(locations[department],)])
-                #    time_to_location[potential_locations,1] = districts_grouped[(locations[department],)][potential_locations,:index]
-                #    time_to_location[potential_locations,2] = Int(ceil(drivingtime[patrol_location[patrolcar, department],time_to_location[potential_locations,1]]))
-                #end
-                #time_to_location = time_to_location[time_to_location[:,2] .<= patrol_area,:]
-                #location = rand(1:size(time_to_location,1))
-                #patrol_location[patrolcar, department] = time_to_location[location,1]
-                #patrol_area_time[patrolcar, department] = 0
                 location = rand(1:nrow(districts_grouped[(locations[department],)]))
                 patrol_location[patrolcar, department] = districts_grouped[(locations[department],)][location,:index]
                 patrol_area_time[patrolcar, department] = 0

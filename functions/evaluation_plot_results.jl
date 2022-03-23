@@ -6,8 +6,9 @@ function plot_simulation_results(weekly_location::DataFrame,
                                  compactness::String)
 # plot the results
     theme(:vibrant,
-    size = (800,400), show = true, dpi = 300,
+    show = true, dpi = 300,
     legend = :outerright,
+    legendfontsize=6,
     xticks = [0,12,24,36,48,60,72,84,96,108,120,132,144,156,168],
     minorticks = 4)
 # plot the results for each location

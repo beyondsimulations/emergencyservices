@@ -23,6 +23,7 @@ Julia 1.7 and Gurobi have to be installed on the machine executing the code in t
 2. Initialize Gurobi as stated in the description of the package [Gurobi.jl](https://github.com/jump-dev/Gurobi.jl)
 3. Clone this repo
 4. Execute the file “1_install_packages.jl” to install all necessary packages (also listed under “Associated Repositories”)
+5. Set the number of cores to use for the simulation as environment variable in Julia [More Details](https://docs.julialang.org/en/v1/manual/multi-threading/)
 
 ### Start the framework with our synthetic data set
 1. Adjust all parameters to adjust the problem in the file “3_start_framework.jl” (more details within the comments of the file)

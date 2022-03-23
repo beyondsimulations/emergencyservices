@@ -34,3 +34,5 @@ results_stage1/belgium
 results_stage1/germany
 results_stage2/belgium
 results_stage2/germany
+*.pdf
+.DS_Store

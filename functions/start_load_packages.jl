@@ -10,7 +10,6 @@
     using Dates
     using Distributions
     using Gurobi
-    using CPLEX
 
 # necessary functions for the framework
     include("part1_adjacency_matrix.jl")
