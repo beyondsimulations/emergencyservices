@@ -10,5 +10,5 @@ elseif  Sys.isapple()
     Pkg.add("Gurobi")
     Pkg.build("Gurobi")
 else
-    "Sorry, we didn't define the code for yourr operating system."
+    "Sorry, we didn't define the code for your operating system."
 end

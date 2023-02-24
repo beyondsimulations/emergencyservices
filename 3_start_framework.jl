@@ -8,15 +8,15 @@ include("functions/start_load_packages.jl")
 # stage 1: only the optimisation will be executed
 # stage 2: only the simulation will be executed (requires at least one run of stage 1)
 # both:    both stages will be executed
-    framework   = "both"::String
+    framework   = "stage 1"::String
 
 # state the name of the problem instance that should be solved, possible examples
 # are "0510","1008","1508","2040" where the name corresponds to the number of BAs
-    problem     = "2040"::String
+    problem     = "0510"::String
 
 # state the name of the subproblem that should be solved, for example "one_location",
 # "basic", "two_locations", eg.
-    subproblem  = "nine_locations"::String
+    subproblem  = "ten_locations"::String
 
 # state the strength of the compactness and contiguity constraints
 # C0 = no contiguity constraints (no compactness)
@@ -30,10 +30,10 @@ include("functions/start_load_packages.jl")
     sim_number = 100::Int64
 
 # state the main input parameters for the optimisation (framework stage 1)
-    number_districts = 9::Int64       # number of districts that should be opened
-    max_drive        = 30.0::Float64  # maximum driving distance (minutes) to district border
-    nearby_districts = 2::Int64       # minimal number of districts within nearby radius
-    nearby_radius    = 30.0::Float64  # maximal driving time to nearby district center
+    number_districts = 10::Int64       # number of districts that should be opened
+    max_drive        = 18.0::Float64  # maximum driving distance (minutes) to district border
+    nearby_districts = 1::Int64       # minimal number of districts within nearby radius
+    nearby_radius    = 18.0::Float64  # maximal driving time to nearby district center
     fixed_locations  = 0::Int64       # number of current locations that should not be moved
     plot_district    = true::Bool     # state whether the resulting district should be plotted
 
