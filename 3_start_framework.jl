@@ -106,7 +106,7 @@ include("functions/start_load_packages.jl")
     end
 
 # prepare the sets for the contiguity and compactness constraints
-    dur = @elapsed N, M, card_n, card_m = sets_m_n(airdist::Array{Float64,2}, size(airdist,1)::Int64)
+    dur = @elapsed N, M, card_n, card_m = sets_m_n(airdist::Array{Float64,2}, size(airdist,1)::Int64, adjacent)
     print("\n Finished set calculation after ", dur," seconds.")
     print("\n Input sucessfully prepared for both stages.")
 
