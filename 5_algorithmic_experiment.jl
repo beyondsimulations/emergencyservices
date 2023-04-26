@@ -7,7 +7,7 @@ include("functions/start_load_packages.jl")
 # Create the experimental backbone
 Ratios = [0.5,1.0]
 BAs = ["0510","1008","1508","2040"]
-Centres = 3:3:24
+Centres = 3:3:30
 Constraints = ["C0","C1","C2","C3"]
 
 # state the optimisation options
@@ -15,7 +15,7 @@ solver = "gurobi"
 const GRB_ENV = Gurobi.Env()
 const optcr   = 0.000::Float64         # allowed gap
 const reslim  = 21600::Int64           # maximal duration of optimisation in seconds
-const cores   = 8::Int64               # number of CPU cores
+const cores   = 16::Int64              # number of CPU cores
 const nodlim  = 1000000::Int64         # maximal number of nodes
 const iterlim = 100000000::Int64       # maximal number of iterations
 const silent  = false::Bool            # state whether to surpress the optimisation log
